@@ -5,4 +5,4 @@ build/
 venv/
 
 # Ignorar o arquivo Ovend.txt
-usarOvend.txt
+usarOvenv.txt
