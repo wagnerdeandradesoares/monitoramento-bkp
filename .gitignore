@@ -1,0 +1,8 @@
+# Ignorar a pasta de build
+build/
+
+# Ignorar a pasta virtualenv (venv)
+venv/
+
+# Ignorar o arquivo Ovend.txt
+usarOvend.txt
