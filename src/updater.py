@@ -2,17 +2,13 @@ import os
 import urllib.request
 import shutil
 
-# -----------------------------
-# CONFIGURAÇÕES
-# -----------------------------
-LOCAL_EXE = r"C:\Program Files (x86)\MonitoramentoBKP\valida_bkp.exe"   # onde o exe roda na loja
-LOCAL_VERSION = r"C:\Program Files (x86)\MonitoramentoBKP\versao.txt"   # onde salvo a versão local
+LOCAL_EXE = r"C:\Program Files (x86)\MonitoramentoBKP\valida_bkp.exe"
+LOCAL_VERSION = r"C:\Program Files (x86)\MonitoramentoBKP\versao.txt"
 
-# Links fixos no GitHub
-URL_VERSION = "https://raw.githubusercontent.com/wagnerdeandradesoares/monitoramento-bkp/refs/heads/master/dist/versao.txt"
+# Corrigido: sem "refs/heads"
+URL_VERSION = "https://raw.githubusercontent.com/wagnerdeandradesoares/monitoramento-bkp/master/dist/versao.txt"
 URL_EXE     = "https://github.com/wagnerdeandradesoares/monitoramento-bkp/releases/download/v1.0.0/valida_bkp.exe"
 
-# -----------------------------
 def get_remote_version():
     try:
         with urllib.request.urlopen(URL_VERSION, timeout=10) as f:
@@ -39,10 +35,12 @@ def download_new_exe():
         os.remove(LOCAL_EXE)
     os.rename(tmp_file, LOCAL_EXE)
 
-# -----------------------------
 if __name__ == "__main__":
     remote_ver = get_remote_version()
     local_ver = get_local_version()
+
+    print(f"🔎 Versão remota: {remote_ver}")
+    print(f"🔎 Versão local: {local_ver}")
 
     if remote_ver and remote_ver != local_ver:
         print(f"🔄 Atualizando de {local_ver} para {remote_ver}...")
