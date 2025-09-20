@@ -17,7 +17,8 @@ BACKUP_DIR = r"C:\backup_sql"  # O backup está no C:\
 VERSAO_FILE_PATH = os.path.join(BASE_DIR, "versao.txt")
 
 # URL do Google Apps Script (substitua pelo seu script)
-SHEET_URL = "https://script.google.com/macros/s/AKfycbxglO8GkSMlRFFWClDrwt91ppUskxn9cB9ZpnLZ_TJSolCDzMI-l0ShC6Y9PtWavS6CVQ/exec"
+SHEET_URL = "https://script.google.com/macros/s/AKfycbz7sl_WZEeP6JgLZEd_fEvosOPl1aXShhNMiHjr2saGHVC6fQCqKqs71cLPAnObHT9S5g/exec"
+             
 
 # -----------------------------
 # Funções
