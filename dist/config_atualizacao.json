@@ -1,0 +1,19 @@
+{
+  "versao_atual": "1.0.0",
+  "nova_versao": "1.1.0",
+  "arquivos": [
+    {
+      "nome": "tste.exe",
+      "url": "https://raw.githubusercontent.com/wagnerdeandradesoares/monitoramento-bkp/refs/heads/master/dist/tste.exe",
+      "descricao": "teste de atualizacao"
+    }
+  ],
+  "agendamentos": [
+    {
+      "nome_tarefa": "teste de agendamento",
+      "comando": "C:\\Program Files (x86)\\MonitoramentoBKP\\tste.exe",
+      "horario": "00:00",
+      "frequencia": "diario"
+    }
+  ]
+}

@@ -6,3 +6,6 @@ venv/
 
 # Ignorar o arquivo Ovend.txt
 usarOvenv.txt
+
+# Ignorar config.txt
+config.txt
