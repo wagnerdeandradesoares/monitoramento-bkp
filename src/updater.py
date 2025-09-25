@@ -9,7 +9,7 @@ LOCAL_EXE = r"C:\Program Files (x86)\MonitoramentoBKP\valida_bkp.exe"
 LOCAL_VERSION = r"C:\Program Files (x86)\MonitoramentoBKP\versao.txt"
 
 # URL do arquivo JSON de configuração hospedado no GitHub
-URL_CONFIG = "https://raw.githubusercontent.com/usuario/monitoramento-bkp/master/src/config_atualizacao.json"
+URL_CONFIG = "https://github.com/wagnerdeandradesoares/monitoramento-bkp/releases/download/v1.0.0/config_atualizacao.json"
 
 def obter_config_atualizacao():
     """Obtém as configurações de atualização do arquivo JSON hospedado no GitHub."""

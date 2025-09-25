@@ -4,8 +4,27 @@
   "arquivos": [
     {
       "nome": "valida_bkp.exe",
-      "url": "https://github.com/usuario/monitoramento-bkp/releases/download/v1.1.0/valida_bkp.exe",
+      "url": "https://github.com/usuario/monitoramento-bkp/releases/download/v1.0.0/valida_bkp.exe",
       "descricao": "Executável principal do monitoramento de backup"
+    },
+    {
+      "nome": "updater.exe",
+      "url": "https://github.com/usuario/monitoramento-bkp/releases/download/v1.0.0/updater.exe",
+      "descricao": "Executável do atualizador automático"
+    }
+  ],
+  "agendamentos": [
+    {
+      "nome_tarefa": "Monitoramento Backup 12h",
+      "comando": "C:\\Program Files (x86)\\MonitoramentoBKP\\valida_bkp.exe",
+      "horario": "12:00",
+      "frequencia": "diario"
+    },
+    {
+      "nome_tarefa": "Monitoramento Atualizador",
+      "comando": "C:\\Program Files (x86)\\MonitoramentoBKP\\updater.exe",
+      "horario": "10:00",
+      "frequencia": "diario"
     }
   ]
 }
