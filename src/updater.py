@@ -51,13 +51,22 @@ def configurar_agendamentos(agendamentos):
         horario = tarefa["horario"]
         frequencia = tarefa["frequencia"]
 
-        # Comando para adicionar a tarefa no Agendador de Tarefas (usando schtasks)
+        # Ajusta a frequência para o formato correto (daily, weekly, monthly, etc.)
+        if frequencia == "diario":
+            frequencia = "daily"
+        elif frequencia == "semanal":
+            frequencia = "weekly"
+        elif frequencia == "mensal":
+            frequencia = "monthly"
+
+        # Comando para adicionar a tarefa no Agendador de Tarefas
         comando_tarefa = f'schtasks /create /tn "{nome_tarefa}" /tr "{comando}" /sc {frequencia} /st {horario} /f'
         try:
             subprocess.run(comando_tarefa, shell=True, check=True)
             print(f"Tarefa '{nome_tarefa}' agendada para {horario}.")
         except subprocess.CalledProcessError as e:
             print(f"Erro ao agendar a tarefa '{nome_tarefa}': {e}")
+            print(f"Comando falhou: {comando_tarefa}")  # Mostra o comando que falhou
 
 def verificar_atualizacao():
     """Verifica se há uma atualização e realiza a atualização, se necessário"""
