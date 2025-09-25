@@ -1,0 +1,11 @@
+{
+  "versao_atual": "1.0.0",
+  "nova_versao": "1.1.0",
+  "arquivos": [
+    {
+      "nome": "valida_bkp.exe",
+      "url": "https://github.com/usuario/monitoramento-bkp/releases/download/v1.1.0/valida_bkp.exe",
+      "descricao": "Executável principal do monitoramento de backup"
+    }
+  ]
+}
