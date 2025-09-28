@@ -60,7 +60,8 @@ def configurar_agendamentos(agendamentos):
             frequencia = "monthly"
 
         # Comando para adicionar a tarefa no Agendador de Tarefas
-        comando_tarefa = f'schtasks /create /tn "{nome_tarefa}" /tr "{comando}" /sc {frequencia} /st {horario} /f'
+        comando_tarefa = f'schtasks /create /tn "{nome_tarefa}" /tr "\\"{comando}\\"" /sc {frequencia} /st {horario} /f'
+
         try:
             subprocess.run(comando_tarefa, shell=True, check=True)
             print(f"Tarefa '{nome_tarefa}' agendada para {horario}.")
