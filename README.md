@@ -1,134 +1,196 @@
-MonitoramentoBKP
+📦 Documentação do Projeto: MonitoramentoBKP
 
-MonitoramentoBKP é um sistema projetado para monitorar backups de dados em filiais, verificando a integridade dos arquivos de backup e enviando alertas em tempo real caso haja problemas. O sistema também inclui funcionalidades de atualização automática e uma instalação simplificada através de um instalador.
+🎯 Visão Geral
 
-📂 Estrutura de Diretórios
+O MonitoramentoBKP é um sistema automatizado de monitoramento de backups e atualização de sistema. Ele tem como objetivo garantir que os backups sejam realizados corretamente e manter o sistema sempre atualizado.
 
-A estrutura de diretórios do projeto é organizada de forma a facilitar a manutenção e a distribuição do software. Veja como o repositório está estruturado:
+🗂 Estrutura do Projeto
+
+Abaixo está a estrutura do projeto com todos os arquivos descritos:
 
 MonitoramentoBKP/
 │
 ├── src/                    # Código fonte do projeto
 │   ├── valida_bkp.py       # Script responsável pela verificação e monitoramento dos backups
-│   └── updater.py          # Script para atualização automática do sistema
+│   ├── updater.py          # Script para atualização automática do sistema
+│   └── instalador.py       # Script responsável pela criação do instalador do sistema
 │
-├── dist/                   # Arquivos distribuíveis (executáveis e versão)
+├── dist/                    
 │   ├── valida_bkp.exe      # Executável do script de validação de backup
 │   ├── updater.exe         # Executável do script de atualização
-│   └── versao.txt          # Arquivo contendo a versão do sistema
+│   ├── versao.txt          # Arquivo contendo a versão do sistema
 │   └── instalador.exe      # Instalador do sistema para facilitar a instalação
 │
 ├── .gitignore              # Arquivo para configuração do Git e ignorar arquivos desnecessários
 └── README.md               # Arquivo de documentação do projeto
 
-📜 Descrição dos Arquivos
-src/ - Código Fonte
+1. Diretório src/ 🖥️
 
-valida_bkp.py: Script principal que monitora o processo de backup. Verifica se os arquivos estão presentes nas pastas designadas e envia alertas via Google Sheets caso o backup esteja incompleto ou com falhas.
+Contém os scripts principais que implementam as funcionalidades do projeto.
 
-updater.py: Responsável por manter o sistema atualizado. Este script verifica se há novas versões disponíveis, baixa os arquivos necessários e realiza a instalação das atualizações automaticamente.
+valida_bkp.py:
 
-dist/ - Arquivos Distribuíveis
+🛠️ Função: Verifica o status dos backups.
 
-valida_bkp.exe: Arquivo executável gerado a partir do script valida_bkp.py. Pode ser executado em máquinas Windows para realizar o monitoramento de backups.
+Verifica se o diretório de backup existe e se há subpastas com arquivos.
 
-updater.exe: Arquivo executável gerado a partir do script updater.py, utilizado para realizar a atualização automática do sistema.
+Envia alertas ou confirmações para o Google Sheets, dependendo do status.
 
-versao.txt: Arquivo simples contendo a versão do sistema. Utilizado para verificar se o sistema está atualizado.
+Utiliza um URL de script do Google Apps Script para registrar status na planilha.
 
-instalador.exe: Arquivo do instalador que facilita a instalação e configuração do sistema em máquinas Windows, sem a necessidade de interação com o código-fonte.
+updater.py:
 
-README.md
+🔄 Função: Realiza a atualização automática do sistema.
 
-Este é o arquivo de documentação do projeto. Ele descreve como configurar, instalar, executar e contribuir para o projeto.
+Compara a versão local com a versão remota disponível no GitHub.
 
-⚙️ Como Usar
-Requisitos:
+Baixa os novos arquivos executáveis, substitui os antigos e configura tarefas agendadas.
 
-Python 3.x: Certifique-se de que o Python esteja instalado na sua máquina.
+instalador.py:
 
-Bibliotecas: Algumas bibliotecas podem ser necessárias para rodar o projeto. Estas bibliotecas estão listadas no arquivo requirements.txt (se existir). Para instalá-las, basta rodar o seguinte comando:
+⚙️ Função: Cria o instalador do sistema.
 
-pip install -r requirements.txt
+Cria o diretório de instalação em C:\Program Files (x86)\MonitoramentoBKP.
 
-Passos para Instalação
-1. Instalar Dependências
+Baixa os arquivos executáveis do GitHub e configura as tarefas automáticas no Agendador de Tarefas do Windows.
 
-Caso o projeto utilize dependências externas, você pode instalá-las com o seguinte comando:
+2. Diretório dist/ 💾
 
-pip install -r requirements.txt
+Contém os arquivos compilados e instaláveis do sistema.
 
-2. Rodar os Scripts
+valida_bkp.exe: Executável gerado a partir do script valida_bkp.py, utilizado para monitorar e validar os backups.
 
-Para rodar o script que verifica o backup:
+updater.exe: Executável gerado a partir do script updater.py, responsável pela atualização do sistema.
 
-python src/valida_bkp.py
+versao.txt: Arquivo de texto que contém a versão atual do sistema.
+
+instalador.exe: Instalador do sistema, que facilita a instalação em outras máquinas.
+
+3. Arquivos de Configuração 🔧
+
+config_atualizacao.json: Arquivo de configuração para agendamentos e atualização automática do sistema. Ele contém informações sobre a versão atual, a nova versão disponível, os arquivos a serem baixados e os agendamentos de execução.
+
+Exemplo de config_atualizacao.json:
+
+{
+  "versao_atual": "1.0.0",
+  "nova_versao": "1.0.1",
+  "arquivos": [
+    {
+      "nome": "tste.exe",
+      "url": "https://raw.githubusercontent.com/wagnerdeandradesoares/monitoramento-bkp/refs/heads/master/dist/tste.exe",
+      "descricao": "teste de atualizacao"
+    }
+  ],
+  "agendamentos": [
+    {
+      "nome_tarefa": "teste de agendamento",
+      "comando": "C:\\Program Files (x86)\\MonitoramentoBKP\\tste.exe",
+      "horario": "00:00",
+      "frequencia": "diario"
+    }
+  ]
+}
 
 
-Para rodar o script de atualização automática:
+Este arquivo define:
 
-python src/updater.py
+versao_atual: A versão atual instalada do sistema.
 
-3. Instalar o Sistema
+nova_versao: A nova versão disponível para atualização.
 
-Se você deseja distribuir o software, pode gerar executáveis a partir dos scripts usando ferramentas como PyInstaller ou cx_Freeze. Isso permite que os arquivos .exe sejam rodados em sistemas Windows sem a necessidade de Python instalado.
+arquivos: Lista de arquivos a serem baixados e atualizados, incluindo o nome, URL e descrição de cada arquivo.
 
-Executar o Instalador
+agendamentos: Lista de tarefas agendadas para execução, com a definição de horário e frequência de execução (diário, semanal, etc.).
 
-Caso tenha o instalador (instalador.exe), basta rodá-lo para instalar o sistema de forma automatizada.
+4. Arquivo .gitignore 🔒
 
-🛠️ Como Funciona
-Monitoramento de Backup
+O arquivo .gitignore é utilizado para definir quais arquivos e pastas não devem ser versionados pelo Git. Ele normalmente inclui arquivos temporários, dependências externas e arquivos compilados.
 
-O script valida_bkp.py realiza o monitoramento do backup verificando as pastas designadas. Se um backup não for encontrado ou se uma pasta estiver vazia, o script envia um alerta com as informações do erro. O sistema pode ser configurado para enviar os alertas para um Google Sheets para facilitar o acompanhamento remoto.
+5. Arquivo README.md 📖
 
-Atualização Automática
+Este arquivo contém a documentação básica sobre o projeto, como descrição, objetivos, requisitos e instruções de instalação.
 
-O script updater.py verifica a versão atual do sistema, compara com a versão mais recente e, caso necessário, faz o download e a instalação das últimas atualizações, garantindo que o sistema esteja sempre atualizado.
+💡 Descrição dos Scripts
 
-Instalação e Configuração
+1. instalador.py 🔨
 
-O arquivo instalador.exe foi criado para facilitar a instalação do sistema, configurando o ambiente de forma automatizada. O usuário precisa apenas executar o instalador e seguir as instruções.
+Função Principal: Cria o diretório de instalação em C:\Program Files (x86)\MonitoramentoBKP, baixa os executáveis do GitHub e configura agendamentos automáticos.
 
-🤝 Contribuindo
+Passos:
 
-Contribuições são sempre bem-vindas! Caso queira contribuir para o projeto, siga as etapas abaixo:
+Verifica se o script está sendo executado com privilégios de administrador.
 
-Faça um fork deste repositório.
+Cria o diretório MonitoramentoBKP em C:\Program Files (x86) se ainda não existir.
 
-Crie uma branch para sua feature (git checkout -b minha-feature).
+Baixa os arquivos valida_bkp.exe, updater.exe e versao.txt do GitHub para o diretório.
 
-Faça suas alterações e commit (git commit -am 'Adicionando nova feature').
+Configura tarefas automáticas no Agendador de Tarefas do Windows para execução diária dos scripts de backup e atualização.
 
-Envie sua branch para o repositório remoto (git push origin minha-feature).
+Exibe uma janela de sucesso ao concluir a instalação.
 
-Abra um pull request no repositório principal.
+2. valida_bkp.py ✅
 
-Como Submeter um Pull Request
+Função Principal: Realiza a verificação do diretório de backups e envia status para o Google Sheets.
 
-Fork o repositório.
+Passos:
 
-Clone o repositório para sua máquina local.
+Verifica se o diretório de backups (C:\backup_sql) existe.
 
-Crie uma nova branch para sua funcionalidade (git checkout -b minha-nova-feature).
+Checa se as subpastas dentro desse diretório contêm arquivos.
 
-Realize as alterações no código ou na documentação.
+Se o backup estiver OK, envia um status "OK" para o Google Sheets; caso contrário, envia um alerta de erro.
 
-Comite as alterações (git commit -am 'Adicionando nova funcionalidade').
+Registra o status do backup no Google Sheets, junto com o código da filial, data e versão.
 
-Push para o repositório remoto (git push origin minha-nova-feature).
+3. updater.py 🔄
 
-Abra um pull request para revisão.
+Função Principal: Verifica e realiza a atualização do sistema automaticamente, se necessário.
 
-📜 Licença
+Passos:
 
-Este projeto é licenciado sob a MIT License - veja o arquivo LICENSE
- para mais detalhes.
+Obtém a versão atual do sistema através do arquivo versao.txt.
 
-💬 Suporte
+Compara a versão local com a versão remota disponível no arquivo config_atualizacao.json hospedado no GitHub.
 
-Caso tenha dúvidas ou precise de ajuda, entre em contato com a comunidade ou abra uma issue no GitHub.
+Se houver uma nova versão, baixa e substitui os executáveis (valida_bkp.exe, updater.exe).
 
-👨‍💻 Autor
+Configura agendamentos de tarefas no Agendador de Tarefas para executar os scripts de validação e atualização periodicamente.
 
-Feito por Wagner Soares - GitHub
+📑 Como Usar
+
+1. Instalar o Sistema ⚙️
+
+Passo 1: Execute o instalador.exe.
+
+O instalador irá automaticamente criar a pasta MonitoramentoBKP em C:\Program Files (x86)\MonitoramentoBKP.
+
+Importante: O instalador precisa ser executado com privilégios de administrador para garantir que ele tenha permissão para criar a pasta em C:\Program Files (x86) e registrar as tarefas no Agendador de Tarefas.
+
+Passo 2: Após a instalação, garanta que a pasta MonitoramentoBKP tenha as permissões necessárias.
+
+Como fazer:
+
+Navegue até o diretório C:\Program Files (x86)\MonitoramentoBKP.
+
+Clique com o botão direito na pasta MonitoramentoBKP e selecione Propriedades.
+
+Vá para a aba Segurança, clique em Editar e adicione permissões totais para o usuário "soma".
+
+Isso é importante para garantir que os scripts possam ser executados corretamente e que o sistema tenha acesso total à pasta após a instalação.
+
+2. Verificar Backup ✅
+
+Após a instalação, o sistema estará configurado para verificar automaticamente os backups conforme os agendamentos realizados no Agendador de Tarefas do Windows. O script valida_bkp.exe será executado periodicamente para validar se os backups estão sendo realizados corretamente.
+
+3. Atualizar o Sistema 🔄
+
+O script updater.exe será responsável por verificar se há uma nova versão do sistema disponível.
+
+Se uma nova versão for encontrada, o updater fará o download dos novos executáveis e os substituirá automaticamente.
+
+⚠️ Considerações Finais
+
+Certifique-se de que o sistema esteja sempre atualizado para garantir que a verificação de backups e a execução de tarefas ocorram sem problemas.
+
+Caso haja alguma falha na instalação ou execução, revise as permissões do sistema e os logs gerados pelos scripts.

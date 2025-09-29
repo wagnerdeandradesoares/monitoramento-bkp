@@ -9,3 +9,7 @@ usarOvenv.txt
 
 # Ignorar config.txt
 config.txt
+
+#Ignorar zip
+
+InstaladorBKP.zip
