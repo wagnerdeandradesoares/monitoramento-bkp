@@ -1,19 +1,19 @@
 {
   "versao_atual": "1.0.0",
-  "nova_versao": "1.0.1",
+  "nova_versao": "1.0.2",
   "arquivos": [
     {
-      "nome": "tste.exe",
-      "url": "https://raw.githubusercontent.com/wagnerdeandradesoares/monitoramento-bkp/refs/heads/master/dist/tste.exe",
-      "descricao": "teste de atualizacao"
+      "nome": "valida_bkp.exe",
+      "url": "https://github.com/wagnerdeandradesoares/monitoramento-bkp/releases/download/v1.0.0/valida_bkp.exe",
+      "descricao": "Valida com terminal"
     }
   ],
   "agendamentos": [
     {
-      "nome_tarefa": "teste de agendamento",
-      "comando": "C:\\Program Files (x86)\\MonitoramentoBKP\\tste.exe",
-      "horario": "00:00",
-      "frequencia": "diario"
+      "nome_tarefa": "",
+      "comando": "",
+      "horario": "",
+      "frequencia": ""
     }
   ]
 }
