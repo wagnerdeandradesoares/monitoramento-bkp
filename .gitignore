@@ -13,3 +13,8 @@ config.txt
 #Ignorar zip
 
 InstaladorBKP.zip
+
+# Ignorar arquivos de configuração
+instalador.spec
+updater.spec
+valida_bkp.spec
