@@ -8,7 +8,7 @@ from datetime import datetime
 # -----------------------------
 # Configurações
 # -----------------------------
-CONFIG_URL = "https://github.com/wagnerdeandradesoares/monitoramento-bkp/releases/download/v1.0.2/config_atualizacao.json"
+CONFIG_URL = "https://raw.githubusercontent.com/wagnerdeandradesoares/monitoramento-bkp/master/dist/config_atualizacao.json"
 BASE_DIR = r"C:\Program Files (x86)\MonitoramentoBKP"
 CHECK_INTERVAL = 60  # intervalo em segundos
 VERSION_FILE = os.path.join(BASE_DIR, "versao.txt")
