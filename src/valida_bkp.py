@@ -4,6 +4,7 @@ import json
 from datetime import datetime
 import urllib.request
 import winreg
+import time
 
 # -----------------------------
 # Configurações
@@ -13,12 +14,11 @@ BACKUP_DIR = r"C:\backup_sql"  # O backup está no C:\
 VERSAO_FILE_PATH = os.path.join(BASE_DIR, "versao.txt")
 
 # URL do Google Apps Script
-SHEET_URL = "https://script.google.com/macros/s/AKfycbwnhW-pfrI0p6KS2G5G1cOPz63k6yjcgdYCKcZ1NQja-N1DwvneyHlLXUx-ADoBh4PYFg/exec"
+SHEET_URL = "https://script.google.com/macros/s/AKfycbyU62jJl6w3S7cG2M9KO5yf9h7yH-GkBIKkr1nucrLNwIQR2SssTI5aw1FqmRBUgJADzQ/exec" # URL de testes
 
 # -----------------------------
 # Funções
 # -----------------------------
-
 def send_to_sheet(filial_id, terminal, status, detalhe):
     """
     Envia alerta ou status OK para Google Sheets
@@ -63,7 +63,7 @@ def get_loja_code():
 def get_terminal_code():
     """Recupera o código do terminal do registro do Windows"""
     key_path = r"Software\Linx Sistemas\LinxPOS-e"
-    value_name = "Terminal"   # <- Nome da chave no regedit
+    value_name = "Terminal"
     try:
         key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, key_path)
         terminal_code, regtype = winreg.QueryValueEx(key, value_name)
@@ -131,8 +131,9 @@ def check_backup():
         log_msg = f"Backup OK\nData: {data_now}\n{detalhe}\nFilial: {filial_code} - {hostname}\nVersão: {versao}"
         send_to_sheet(hostname, terminal_code, "OK", log_msg)
 
-# -----------------------------
-# Execução
-# -----------------------------
+
+
 if __name__ == "__main__":
     check_backup()
+  
+    

@@ -9,7 +9,7 @@ LOCAL_EXE = r"C:\Program Files (x86)\MonitoramentoBKP\valida_bkp.exe"
 LOCAL_VERSION = r"C:\Program Files (x86)\MonitoramentoBKP\versao.txt"
 
 # URL do arquivo JSON de configuração hospedado no GitHub
-URL_CONFIG = "https://github.com/wagnerdeandradesoares/monitoramento-bkp/releases/download/v1.0.0/config_atualizacao.json"
+URL_CONFIG = "https://github.com/wagnerdeandradesoares/monitoramento-bkp/releases/download/v1.0.2/config_atualizacao.json"
 
 def obter_config_atualizacao():
     """Obtém as configurações de atualização do arquivo JSON hospedado no GitHub."""
@@ -43,32 +43,6 @@ def atualizar_exe(novo_arquivo_url, nome_arquivo):
     except Exception as e:
         print(f"Erro ao atualizar {nome_arquivo}: {e}")
 
-def configurar_agendamentos(agendamentos):
-    """Configura os agendamentos das tarefas no Agendador de Tarefas"""
-    for tarefa in agendamentos:
-        nome_tarefa = tarefa["nome_tarefa"]
-        comando = tarefa["comando"]
-        horario = tarefa["horario"]
-        frequencia = tarefa["frequencia"]
-
-        # Ajusta a frequência para o formato correto (daily, weekly, monthly, etc.)
-        if frequencia == "diario":
-            frequencia = "daily"
-        elif frequencia == "semanal":
-            frequencia = "weekly"
-        elif frequencia == "mensal":
-            frequencia = "monthly"
-
-        # Comando para adicionar a tarefa no Agendador de Tarefas
-        comando_tarefa = f'schtasks /create /tn "{nome_tarefa}" /tr "\\"{comando}\\"" /sc {frequencia} /st {horario} /f'
-
-        try:
-            subprocess.run(comando_tarefa, shell=True, check=True)
-            print(f"Tarefa '{nome_tarefa}' agendada para {horario}.")
-        except subprocess.CalledProcessError as e:
-            print(f"Erro ao agendar a tarefa '{nome_tarefa}': {e}")
-            print(f"Comando falhou: {comando_tarefa}")  # Mostra o comando que falhou
-
 def verificar_atualizacao():
     """Verifica se há uma atualização e realiza a atualização, se necessário"""
     # Obtém a configuração de atualização do GitHub
@@ -76,7 +50,7 @@ def verificar_atualizacao():
 
     if config:
         versao_local = obter_versao_local()
-        versao_remota = config["nova_versao"]
+        versao_remota = config["versao"]
 
         print(f"Versão local: {versao_local}")
         print(f"Versão remota: {versao_remota}")
@@ -91,11 +65,6 @@ def verificar_atualizacao():
             # Atualiza a versão local
             with open(LOCAL_VERSION, "w", encoding="utf-8") as f:
                 f.write(versao_remota)
-
-            # Configura os agendamentos
-            configurar_agendamentos(config["agendamentos"])
-        else:
-            print("A versão já está atualizada!")
 
 if __name__ == "__main__":
     verificar_atualizacao()

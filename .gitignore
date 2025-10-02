@@ -18,3 +18,5 @@ InstaladorBKP.zip
 instalador.spec
 updater.spec
 valida_bkp.spec
+instaladorBaseService.spec
+launcher.spec
