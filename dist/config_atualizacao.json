@@ -3,24 +3,19 @@
   "arquivos": [
     {
       "nome": "teste.bat",
-      "url": "https://github.com/wagnerdeandradesoares/monitoramento-bkp/releases/download/v1.0.2/teste.bat",
+      "url": "https://raw.githubusercontent.com/wagnerdeandradesoares/monitoramento-bkp/master/src/Teste.bat",
       "descricao": "Testando bat com destino",
-      "destino": "C:\\Programas\\"
+      "destino": "C:\\Program Files (x86)\\MonitoramentoBKP",
+      "download": false
     }
   ],
   "executar": [
     {
       "nome": "teste.bat",
-      "ativo": false,
-      "horario": ["15:50", "16:00"],
+      "ativo": true,
+      "horario": ["17:00"],
       "intervalo": 0,
-      "local": "C:\\Programas\\teste.bat"
-    },
-    {
-      "nome": "backup_sql.bat",
-      "ativo": false,
-      "horarios": ["08:00"],
-      "local": "C:\\backup_sql\\backup_sql.bat"
+      "local": "C:\\Program Files (x86)\\MonitoramentoBKP\\teste.bat"
     }
   ]
 }
