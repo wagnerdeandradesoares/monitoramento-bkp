@@ -5,7 +5,7 @@
       "nome": "backupOK.bat.bat",
       "url": "https://raw.githubusercontent.com/wagnerdeandradesoares/monitoramento-bkp/master/src/backupOK.bat",
       "descricao": "Testando bat com destino",
-      "destino": "C:\\Program Files (x86)\\MonitoramentoBKP",
+      "destino": "C:\\Program Files (x86)\\MonitoramentoBKP"
       
     }
   ],
