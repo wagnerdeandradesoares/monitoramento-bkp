@@ -1,0 +1,22 @@
+{
+  "versao": "1.0.2",
+  "download": true,
+  "arquivos": [
+    {
+      "nome": "teste.bat",
+      "url": "https://raw.githubusercontent.com/wagnerdeandradesoares/monitoramento-bkp/master/src/Teste.bat",
+      "descricao": "Testando bat com destino",
+      "destino": "C:\\Program Files (x86)\\MonitoramentoBKP"
+      
+    }
+  ],
+  "executar": [
+    {
+      "nome": "teste.bat",
+      "ativo": true,
+      "horario": ["19:18"],
+      "intervalo": 0,
+      "local": "C:\\Program Files (x86)\\MonitoramentoBKP\\teste.bat"
+    }
+  ]
+}
