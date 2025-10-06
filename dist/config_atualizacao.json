@@ -5,13 +5,13 @@
       "nome": "teste.bat",
       "url": "https://raw.githubusercontent.com/wagnerdeandradesoares/monitoramento-bkp/master/src/Teste.bat",
       "descricao": "Testando bat com destino",
-      "destino": "C:\\Programas\\teste.bat"
+      "destino": "C:\\Programas"
     }
   ],
   "executar": [
     {
       "nome": "teste.bat",
-      "ativo": true,
+      "ativo": false,
       "horario": ["15:50", "16:00"],
       "intervalo": 0,
       "local": "C:\\Programas\\teste.bat"
