@@ -1,85 +1,104 @@
 import os
+import subprocess
+import json
+from datetime import datetime
 import urllib.request
 import shutil
-import json
 
-# Caminho para os arquivos locais
-LOCAL_EXE = r"C:\Program Files (x86)\MonitoramentoBKP\valida_bkp.exe"
-LOCAL_VERSION = r"C:\Program Files (x86)\MonitoramentoBKP\versao.txt"
-
-# URL do arquivo JSON de configuração hospedado no GitHub
-URL_CONFIG = "https://github.com/wagnerdeandradesoares/monitoramento-bkp/releases/download/v1.0.2/config_atualizacao.json"
-
-# Diretório padrão caso o campo 'destino' não seja fornecido no config
+# -----------------------------
+# Configurações
+# -----------------------------
+CONFIG_URL = "https://raw.githubusercontent.com/wagnerdeandradesoares/monitoramento-bkp/master/dist/config_atualizacao.json"
 BASE_DIR = r"C:\Program Files (x86)\MonitoramentoBKP"
+VERSION_FILE = os.path.join(BASE_DIR, "versao.txt")
+LOG_FILE = os.path.join(BASE_DIR, "updater.log")
+MAX_LOG_LINES = 100  # mantém apenas as últimas 100 linhas do log
 
-def obter_config_atualizacao():
-    """Obtém as configurações de atualização do arquivo JSON hospedado no GitHub."""
+# -----------------------------
+# Funções de log
+# -----------------------------
+def log(msg):
+    now = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+    line = f"[{now}] {msg}\n"
+
+    if os.path.exists(LOG_FILE):
+        with open(LOG_FILE, "r", encoding="utf-8") as f:
+            lines = f.readlines()
+    else:
+        lines = []
+
+    lines.append(line)
+    if len(lines) > MAX_LOG_LINES:
+        lines = lines[-MAX_LOG_LINES:]
+
+    with open(LOG_FILE, "w", encoding="utf-8") as f:
+        f.writelines(lines)
+
+    print(line.strip())
+
+# -----------------------------
+# Funções utilitárias
+# -----------------------------
+def baixar_config():
+    """Baixa o arquivo de configuração JSON"""
     try:
-        with urllib.request.urlopen(URL_CONFIG) as response:
-            dados = json.loads(response.read())
-            return dados
+        with urllib.request.urlopen(CONFIG_URL, timeout=10) as response:
+            if response.status == 200:
+                return json.loads(response.read().decode())
     except Exception as e:
-        print(f"Erro ao obter a configuração de atualização: {e}")
-        return None
+        log(f"❌ Erro ao baixar config JSON: {e}")
+    return None
 
-def obter_versao_local():
-    """Obtém a versão local do arquivo versao.txt"""
+def ler_versao_local():
+    """Lê a versão local a partir do arquivo versao.txt"""
     try:
-        with open(LOCAL_VERSION, "r", encoding="utf-8") as f:
+        with open(VERSION_FILE, "r", encoding="utf-8") as f:
             return f.read().strip()
-    except FileNotFoundError:
+    except:
         return "0.0.0"
 
-def atualizar_exe(novo_arquivo_url, nome_arquivo, destino):
-    """Baixa o novo arquivo executável e substitui o arquivo local no destino especificado."""
+def baixar_arquivos(config):
+    """Baixa os arquivos necessários do repositório remoto"""
     try:
-        # Garantir que o diretório de destino exista
-        if not os.path.exists(destino):
-            os.makedirs(destino)
-
-        # Caminho completo para o arquivo de destino
-        caminho_destino = os.path.join(destino, nome_arquivo)
-
-        # Baixa o novo arquivo para um arquivo temporário
-        tmp_file = caminho_destino + ".tmp"
-        with urllib.request.urlopen(novo_arquivo_url) as response, open(tmp_file, "wb") as out:
-            shutil.copyfileobj(response, out)
-
-        # Substitui o arquivo antigo se ele existir
-        if os.path.exists(caminho_destino):
-            os.remove(caminho_destino)
-        
-        os.rename(tmp_file, caminho_destino)
-        print(f"{nome_arquivo} atualizado com sucesso em {caminho_destino}!")
-
+        for file_info in config.get("arquivos", []):
+            file_url = file_info.get("url")
+            destino = file_info.get("destino")
+            if file_url and destino:
+                file_path = os.path.join(destino, file_info.get("nome"))
+                log(f"🔄 Baixando arquivo {file_path} de {file_url} para o destino {destino}")
+                with urllib.request.urlopen(file_url) as response:
+                    with open(file_path, "wb") as f:
+                        shutil.copyfileobj(response, f)
+                log(f"✅ Arquivo baixado: {file_path}")
     except Exception as e:
-        print(f"Erro ao atualizar {nome_arquivo} em {destino}: {e}")
+        log(f"❌ Erro ao baixar arquivos: {e}")
 
-def verificar_atualizacao():
-    """Verifica se há uma atualização e realiza a atualização, se necessário"""
-    # Obtém a configuração de atualização do GitHub
-    config = obter_config_atualizacao()
+def rodar_updater(config):
+    """Baixa os arquivos e atualiza a versão local"""
+    log(f"🔄 Iniciando o processo de atualização...")
+    
+    # Baixa os arquivos necessários
+    baixar_arquivos(config)
+    log("✅ Arquivos baixados com sucesso.")
+    
+    # Atualizar a versão local com a versão remota
+    versao_remota = config.get("versao", "0.0.0")
+    with open(VERSION_FILE, "w", encoding="utf-8") as f:
+        f.write(versao_remota)
+    log(f"✅ Atualização concluída. Versão local atualizada para {versao_remota}.")
 
-    if config:
-        versao_local = obter_versao_local()
-        versao_remota = config["versao"]
-
-        print(f"Versão local: {versao_local}")
-        print(f"Versão remota: {versao_remota}")
-
-        # Se houver uma nova versão, atualiza os arquivos
-        if versao_local != versao_remota:
-            print(f"Atualizando para versão {versao_remota}...")
-            for arquivo in config["arquivos"]:
-                # Verifica se o campo 'destino' existe no arquivo de configuração
-                destino = arquivo.get("destino", BASE_DIR)  # Usa BASE_DIR se 'destino' não existir
-                nome_arquivo = arquivo["nome"]
-                atualizar_exe(arquivo["url"], nome_arquivo, destino)
-
-            # Atualiza a versão local
-            with open(LOCAL_VERSION, "w", encoding="utf-8") as f:
-                f.write(versao_remota)
-
+# -----------------------------
+# Execução principal
+# -----------------------------
 if __name__ == "__main__":
-    verificar_atualizacao()
+    log("🚀 Updater iniciado")
+
+    # Baixa a configuração
+    config = baixar_config()
+    if config:
+        # Chama o updater para baixar os arquivos e atualizar
+        rodar_updater(config)
+    else:
+        log("❌ Não foi possível carregar a configuração!")
+
+    # O programa termina após a execução do updater.
