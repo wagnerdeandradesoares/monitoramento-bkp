@@ -20,7 +20,7 @@
     {
       "nome": "backupOK.bat",
       "ativo": true,
-      "horario": [""],
+      "horario": 0,
       "intervalo": 2,
       "local": "C:\\Program Files (x86)\\MonitoramentoBKP\\backupOK.bat"
     }
