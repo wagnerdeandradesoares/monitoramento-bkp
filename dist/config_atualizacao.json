@@ -4,14 +4,13 @@
     {
       "nome": "teste.bat",
       "url": "https://github.com/wagnerdeandradesoares/monitoramento-bkp/releases/download/v1.0.2/teste.bat",
-      "descricao": "Testando bat com destino",
-      "destino": "C:\\Programas\\teste.bat"
+      "descricao": "Testando bat com destino"
     }
   ],
   "executar": [
     {
       "nome": "teste.bat",
-      "ativo": true,
+      "ativo": false,
       "horario": ["15:50", "16:00"],
       "intervalo": 0,
       "local": "C:\\Programas\\teste.bat"
