@@ -14,7 +14,7 @@
     {
       "nome": "teste.bat",
       "ativo": true,
-      "horario": ["17:00"],
+      "horario": ["19:18"],
       "intervalo": 0,
       "local": "C:\\Program Files (x86)\\MonitoramentoBKP\\teste.bat"
     }
