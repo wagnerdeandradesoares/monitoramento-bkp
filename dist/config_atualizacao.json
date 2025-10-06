@@ -1,6 +1,6 @@
 {
   "versao": "1.0.2",
-  "download": true,
+  "download": false,
   "arquivos": [
     {
       "nome": "teste.bat",
