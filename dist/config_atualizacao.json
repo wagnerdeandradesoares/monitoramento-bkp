@@ -2,19 +2,19 @@
   "versao": "1.0.2",
   "arquivos": [
     {
-      "nome": "valida_bkp.exe",
-      "url": "https://github.com/wagnerdeandradesoares/monitoramento-bkp/releases/download/v1.0.2/valida_bkp.exe",
-      "descricao": "Validador de Backup",
-      "destino": "C:\\Program Files (x86)\\MonitoramentoBKP\\valida_bkp.exe"
+      "nome": "teste.bat",
+      "url": "https://raw.githubusercontent.com/wagnerdeandradesoares/monitoramento-bkp/master/src/Teste.bat",
+      "descricao": "Testando bat com destino",
+      "destino": "C:\\Programas\\teste.bat"
     }
   ],
   "executar": [
     {
-      "nome": "valida_bkp.exe",
-      "ativo": false,
-      "horario": ["12:00", "18:00"],
+      "nome": "teste.bat",
+      "ativo": true,
+      "horario": ["15:50", "16:00"],
       "intervalo": 0,
-      "local": "C:\\Program Files (x86)\\MonitoramentoBKP\\valida_bkp.exe"
+      "local": "C:\\Programas\\teste.bat"
     },
     {
       "nome": "backup_sql.bat",
