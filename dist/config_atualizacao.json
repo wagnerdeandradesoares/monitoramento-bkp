@@ -4,23 +4,23 @@
     {
       "nome": "valida_bkp.exe",
       "url": "https://github.com/wagnerdeandradesoares/monitoramento-bkp/releases/download/v1.0.2/valida_bkp.exe",
-      "descricao": "Valida"
+      "descricao": "Validador de Backup",
+      "destino": "C:\\Program Files (x86)\\MonitoramentoBKP\\valida_bkp.exe"
     }
   ],
   "executar": [
     {
-      "nome": "backup_sync.exe",
-      "horario": null,
+      "nome": "valida_bkp.exe",
+      "ativo": false,
+      "horario": ["12:00", "18:00"],
       "intervalo": 0,
-      "apos_updater": false,
-      "ativo": false
+      "local": "C:\\Program Files (x86)\\MonitoramentoBKP\\valida_bkp.exe"
     },
-        {
-      "nome": "backup_sync.exe",
-      "horario": null,
-      "intervalo": 0,
-      "apos_updater": false,
-      "ativo": false
+    {
+      "nome": "backup_sql.bat",
+      "ativo": false,
+      "horarios": ["08:00"],
+      "local": "C:\\backup_sql\\backup_sql.bat"
     }
   ]
 }

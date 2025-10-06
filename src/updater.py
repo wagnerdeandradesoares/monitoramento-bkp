@@ -2,7 +2,6 @@ import os
 import urllib.request
 import shutil
 import json
-import subprocess
 
 # Caminho para os arquivos locais
 LOCAL_EXE = r"C:\Program Files (x86)\MonitoramentoBKP\valida_bkp.exe"
@@ -10,6 +9,9 @@ LOCAL_VERSION = r"C:\Program Files (x86)\MonitoramentoBKP\versao.txt"
 
 # URL do arquivo JSON de configuração hospedado no GitHub
 URL_CONFIG = "https://github.com/wagnerdeandradesoares/monitoramento-bkp/releases/download/v1.0.2/config_atualizacao.json"
+
+# Diretório padrão caso o campo 'destino' não seja fornecido no config
+BASE_DIR = r"C:\Program Files (x86)\MonitoramentoBKP"
 
 def obter_config_atualizacao():
     """Obtém as configurações de atualização do arquivo JSON hospedado no GitHub."""
@@ -29,19 +31,30 @@ def obter_versao_local():
     except FileNotFoundError:
         return "0.0.0"
 
-def atualizar_exe(novo_arquivo_url, nome_arquivo):
-    """Baixa o novo arquivo executável e substitui o arquivo local"""
+def atualizar_exe(novo_arquivo_url, nome_arquivo, destino):
+    """Baixa o novo arquivo executável e substitui o arquivo local no destino especificado."""
     try:
-        tmp_file = nome_arquivo + ".tmp"
+        # Garantir que o diretório de destino exista
+        if not os.path.exists(destino):
+            os.makedirs(destino)
+
+        # Caminho completo para o arquivo de destino
+        caminho_destino = os.path.join(destino, nome_arquivo)
+
+        # Baixa o novo arquivo para um arquivo temporário
+        tmp_file = caminho_destino + ".tmp"
         with urllib.request.urlopen(novo_arquivo_url) as response, open(tmp_file, "wb") as out:
             shutil.copyfileobj(response, out)
 
-        if os.path.exists(nome_arquivo):
-            os.remove(nome_arquivo)
-        os.rename(tmp_file, nome_arquivo)
-        print(f"{nome_arquivo} atualizado com sucesso!")
+        # Substitui o arquivo antigo se ele existir
+        if os.path.exists(caminho_destino):
+            os.remove(caminho_destino)
+        
+        os.rename(tmp_file, caminho_destino)
+        print(f"{nome_arquivo} atualizado com sucesso em {caminho_destino}!")
+
     except Exception as e:
-        print(f"Erro ao atualizar {nome_arquivo}: {e}")
+        print(f"Erro ao atualizar {nome_arquivo} em {destino}: {e}")
 
 def verificar_atualizacao():
     """Verifica se há uma atualização e realiza a atualização, se necessário"""
@@ -59,8 +72,10 @@ def verificar_atualizacao():
         if versao_local != versao_remota:
             print(f"Atualizando para versão {versao_remota}...")
             for arquivo in config["arquivos"]:
-                nome_arquivo = os.path.join(r"C:\Program Files (x86)\MonitoramentoBKP", arquivo["nome"])
-                atualizar_exe(arquivo["url"], nome_arquivo)
+                # Verifica se o campo 'destino' existe no arquivo de configuração
+                destino = arquivo.get("destino", BASE_DIR)  # Usa BASE_DIR se 'destino' não existir
+                nome_arquivo = arquivo["nome"]
+                atualizar_exe(arquivo["url"], nome_arquivo, destino)
 
             # Atualiza a versão local
             with open(LOCAL_VERSION, "w", encoding="utf-8") as f:

@@ -1,196 +1,176 @@
-📦 Documentação do Projeto: MonitoramentoBKP
+Documentação do Projeto: Monitoramento de Backup
+1. Visão Geral
 
-🎯 Visão Geral
+O projeto monitora e valida backups de lojas, atualiza executáveis de forma centralizada e mantém logs de execução.
 
-O MonitoramentoBKP é um sistema automatizado de monitoramento de backups e atualização de sistema. Ele tem como objetivo garantir que os backups sejam realizados corretamente e manter o sistema sempre atualizado.
+O launcher é instalado como serviço do Windows, garantindo execução automática ao iniciar o computador, sem intervenção manual.
 
-🗂 Estrutura do Projeto
-
-Abaixo está a estrutura do projeto com todos os arquivos descritos:
-
-MonitoramentoBKP/
+2. Estrutura de Arquivos
+C:\Program Files (x86)\MonitoramentoBKP\
 │
-├── src/                    # Código fonte do projeto
-│   ├── valida_bkp.py       # Script responsável pela verificação e monitoramento dos backups
-│   ├── updater.py          # Script para atualização automática do sistema
-│   └── instalador.py       # Script responsável pela criação do instalador do sistema
-│
-├── dist/                    
-│   ├── valida_bkp.exe      # Executável do script de validação de backup
-│   ├── updater.exe         # Executável do script de atualização
-│   ├── versao.txt          # Arquivo contendo a versão do sistema
-│   └── instalador.exe      # Instalador do sistema para facilitar a instalação
-│
-├── .gitignore              # Arquivo para configuração do Git e ignorar arquivos desnecessários
-└── README.md               # Arquivo de documentação do projeto
+├── launcher.exe         # Programa principal, roda em loop como serviço
+├── updater.exe          # Atualizador de arquivos do sistema
+├── valida_bkp.exe       # Validação do backup da loja
+├── versao.txt           # Contém a versão local do sistema
+├── launcher.log         # Log enxuto das últimas execuções importantes
+└── outros arquivos      # Novos executáveis adicionados via config
 
-1. Diretório src/ 🖥️
+3. Configuração Remota
 
-Contém os scripts principais que implementam as funcionalidades do projeto.
-
-valida_bkp.py:
-
-🛠️ Função: Verifica o status dos backups.
-
-Verifica se o diretório de backup existe e se há subpastas com arquivos.
-
-Envia alertas ou confirmações para o Google Sheets, dependendo do status.
-
-Utiliza um URL de script do Google Apps Script para registrar status na planilha.
-
-updater.py:
-
-🔄 Função: Realiza a atualização automática do sistema.
-
-Compara a versão local com a versão remota disponível no GitHub.
-
-Baixa os novos arquivos executáveis, substitui os antigos e configura tarefas agendadas.
-
-instalador.py:
-
-⚙️ Função: Cria o instalador do sistema.
-
-Cria o diretório de instalação em C:\Program Files (x86)\MonitoramentoBKP.
-
-Baixa os arquivos executáveis do GitHub e configura as tarefas automáticas no Agendador de Tarefas do Windows.
-
-2. Diretório dist/ 💾
-
-Contém os arquivos compilados e instaláveis do sistema.
-
-valida_bkp.exe: Executável gerado a partir do script valida_bkp.py, utilizado para monitorar e validar os backups.
-
-updater.exe: Executável gerado a partir do script updater.py, responsável pela atualização do sistema.
-
-versao.txt: Arquivo de texto que contém a versão atual do sistema.
-
-instalador.exe: Instalador do sistema, que facilita a instalação em outras máquinas.
-
-3. Arquivos de Configuração 🔧
-
-config_atualizacao.json: Arquivo de configuração para agendamentos e atualização automática do sistema. Ele contém informações sobre a versão atual, a nova versão disponível, os arquivos a serem baixados e os agendamentos de execução.
-
-Exemplo de config_atualizacao.json:
+O launcher baixa o config JSON do GitHub:
 
 {
-  "versao_atual": "1.0.0",
-  "nova_versao": "1.0.1",
+  "versao": "1.0.5",
   "arquivos": [
     {
-      "nome": "tste.exe",
-      "url": "https://raw.githubusercontent.com/wagnerdeandradesoares/monitoramento-bkp/refs/heads/master/dist/tste.exe",
-      "descricao": "teste de atualizacao"
+      "nome": "valida_bkp.exe",
+      "url": "https://raw.githubusercontent.com/wagnerdeandradesoares/monitoramento-bkp/master/dist/valida_bkp.exe",
+      "descricao": "Validação de backup"
+    },
+    {
+      "nome": "updater.exe",
+      "url": "https://raw.githubusercontent.com/wagnerdeandradesoares/monitoramento-bkp/master/dist/updater.exe",
+      "descricao": "Atualizador de arquivos"
     }
   ],
-  "agendamentos": [
+  "executar": [
     {
-      "nome_tarefa": "teste de agendamento",
-      "comando": "C:\\Program Files (x86)\\MonitoramentoBKP\\tste.exe",
-      "horario": "00:00",
-      "frequencia": "diario"
+      "nome": "novo_exe.exe",
+      "ativo": true,
+      "horario": "14:00",
+      "intervalo": 60
     }
   ]
 }
 
 
-Este arquivo define:
+Campos importantes:
 
-versao_atual: A versão atual instalada do sistema.
+Campo	Descrição
+versao	Versão remota do sistema. Atualização só ocorre se remota > local (versao.txt).
+arquivos	Lista de arquivos que podem ser atualizados. Contém nome, url e descricao.
+executar	Lista de novos executáveis que serão rodados automaticamente, com horário fixo ou intervalo. ativo controla se deve executar.
+4. Descrição dos Executáveis
+4.1 Launcher.exe
 
-nova_versao: A nova versão disponível para atualização.
+Programa principal, agora como serviço do Windows (Base Service - Monitoramento de Backup).
 
-arquivos: Lista de arquivos a serem baixados e atualizados, incluindo o nome, URL e descrição de cada arquivo.
+Funções:
 
-agendamentos: Lista de tarefas agendadas para execução, com a definição de horário e frequência de execução (diário, semanal, etc.).
+Rodar em loop constante.
 
-4. Arquivo .gitignore 🔒
+Baixar config remoto e verificar versão.
 
-O arquivo .gitignore é utilizado para definir quais arquivos e pastas não devem ser versionados pelo Git. Ele normalmente inclui arquivos temporários, dependências externas e arquivos compilados.
+Executar updater se houver nova versão.
 
-5. Arquivo README.md 📖
+Executar valida_bkp.exe às 12h ou após updater.
 
-Este arquivo contém a documentação básica sobre o projeto, como descrição, objetivos, requisitos e instruções de instalação.
+Executar futuros EXEs do config, respeitando horários ou intervalos.
 
-💡 Descrição dos Scripts
+Mantém logs enxutos em launcher.log.
 
-1. instalador.py 🔨
+4.2 Updater.exe
 
-Função Principal: Cria o diretório de instalação em C:\Program Files (x86)\MonitoramentoBKP, baixa os executáveis do GitHub e configura agendamentos automáticos.
+Atualiza arquivos do sistema quando há nova versão.
 
-Passos:
+Compara versão remota com local (versao.txt).
 
-Verifica se o script está sendo executado com privilégios de administrador.
+Baixa e substitui arquivos da lista arquivos.
 
-Cria o diretório MonitoramentoBKP em C:\Program Files (x86) se ainda não existir.
+Atualiza versao.txt.
 
-Baixa os arquivos valida_bkp.exe, updater.exe e versao.txt do GitHub para o diretório.
+Executa valida_bkp.exe após atualização.
 
-Configura tarefas automáticas no Agendador de Tarefas do Windows para execução diária dos scripts de backup e atualização.
+Executa uma vez e encerra.
 
-Exibe uma janela de sucesso ao concluir a instalação.
+4.3 Valida_bkp.exe
 
-2. valida_bkp.py ✅
+Valida backups das lojas e envia relatórios para Google Sheets.
 
-Função Principal: Realiza a verificação do diretório de backups e envia status para o Google Sheets.
+Roda:
 
-Passos:
+Pelo launcher às 12h.
 
-Verifica se o diretório de backups (C:\backup_sql) existe.
+Sempre após updater.
 
-Checa se as subpastas dentro desse diretório contêm arquivos.
+Verifica existência de pastas e arquivos de backup.
 
-Se o backup estiver OK, envia um status "OK" para o Google Sheets; caso contrário, envia um alerta de erro.
+Envia status OK ou ERRO.
 
-Registra o status do backup no Google Sheets, junto com o código da filial, data e versão.
+4.4 Outros executáveis futuros
 
-3. updater.py 🔄
+Adicionados via config (executar).
 
-Função Principal: Verifica e realiza a atualização do sistema automaticamente, se necessário.
+Podem ter horário fixo (horario) ou intervalo em minutos (intervalo).
 
-Passos:
+Só rodam se ativo: true.
 
-Obtém a versão atual do sistema através do arquivo versao.txt.
+Permitem expansão do sistema sem alterar o launcher.
 
-Compara a versão local com a versão remota disponível no arquivo config_atualizacao.json hospedado no GitHub.
+5. Serviço do Windows
 
-Se houver uma nova versão, baixa e substitui os executáveis (valida_bkp.exe, updater.exe).
+Nome: Base Service - Monitoramento de Backup
 
-Configura agendamentos de tarefas no Agendador de Tarefas para executar os scripts de validação e atualização periodicamente.
+Criado automaticamente pelo instalador.
 
-📑 Como Usar
+Benefícios:
 
-1. Instalar o Sistema ⚙️
+Executa ao iniciar o Windows.
 
-Passo 1: Execute o instalador.exe.
+Roda em segundo plano sem janelas.
 
-O instalador irá automaticamente criar a pasta MonitoramentoBKP em C:\Program Files (x86)\MonitoramentoBKP.
+Para verificar serviços: sc query.
 
-Importante: O instalador precisa ser executado com privilégios de administrador para garantir que ele tenha permissão para criar a pasta em C:\Program Files (x86) e registrar as tarefas no Agendador de Tarefas.
+Para deletar serviço: sc delete "Base Service - Monitoramento de Backup".
 
-Passo 2: Após a instalação, garanta que a pasta MonitoramentoBKP tenha as permissões necessárias.
+6. Controle de Logs
 
-Como fazer:
+launcher.log registra eventos importantes:
 
-Navegue até o diretório C:\Program Files (x86)\MonitoramentoBKP.
+Atualização de arquivos (updater)
 
-Clique com o botão direito na pasta MonitoramentoBKP e selecione Propriedades.
+Validação de backup (valida_bkp)
 
-Vá para a aba Segurança, clique em Editar e adicione permissões totais para o usuário "soma".
+Execução de novos EXEs
 
-Isso é importante para garantir que os scripts possam ser executados corretamente e que o sistema tenha acesso total à pasta após a instalação.
+Erros de download ou execução
 
-2. Verificar Backup ✅
+Mantém apenas últimas 100 linhas.
 
-Após a instalação, o sistema estará configurado para verificar automaticamente os backups conforme os agendamentos realizados no Agendador de Tarefas do Windows. O script valida_bkp.exe será executado periodicamente para validar se os backups estão sendo realizados corretamente.
+7. Instalação
 
-3. Atualizar o Sistema 🔄
+Execute o instalador como administrador, garantindo permissões completas para criar pastas e serviços.
 
-O script updater.exe será responsável por verificar se há uma nova versão do sistema disponível.
+O instalador cria automaticamente a pasta MonitoramentoBKP no local correto (C:\Program Files (x86)\).
 
-Se uma nova versão for encontrada, o updater fará o download dos novos executáveis e os substituirá automaticamente.
+Permissões: conceda permissão de leitura/escrita na pasta criada para o usuário SOMA.
 
-⚠️ Considerações Finais
+O instalador cria o serviço do launcher automaticamente.
 
-Certifique-se de que o sistema esteja sempre atualizado para garantir que a verificação de backups e a execução de tarefas ocorram sem problemas.
+Configuração do serviço no Windows:
 
-Caso haja alguma falha na instalação ou execução, revise as permissões do sistema e os logs gerados pelos scripts.
+Abra o Gerenciador de Serviços (services.msc).
+
+Localize o serviço: Base Service - Monitoramento de Backup.
+
+Clique com o botão direito → Propriedades.
+
+Na aba Recuperação:
+
+Em Primeira falha, Segunda falha e Falhas posteriores, selecione Reiniciar o serviço.
+
+Na aba Logon:
+
+Marque Esta conta e informe o usuário SOMA com a senha correspondente.
+
+Verifique se o serviço está em execução. O launcher iniciará automaticamente e gerenciará updater, valida e futuros EXEs conforme definido no config remoto.
+
+8. Boas Práticas
+
+Evitar executar manualmente o launcher quando o serviço já está ativo.
+
+Não alterar executáveis enquanto o launcher está rodando.
+
+Para rollback de versão, alterar manualmente versao.txt e reiniciar launcher.
+
+Para adicionar novos executáveis, atualizar apenas o config remoto com ativo, horario ou intervalo.

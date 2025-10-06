@@ -91,7 +91,7 @@ def download_and_install_nssm():
 
 def create_base_service(nssm_path):
     service_name = "BaseService"
-    display_name = "Base Service - Monitoramento de Backup"
+    display_name = "Base Service"
     launcher_path = r"C:\Program Files (x86)\MonitoramentoBKP\launcher.exe"
 
     if not os.path.exists(launcher_path):

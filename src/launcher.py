@@ -25,21 +25,16 @@ def log(msg):
     now = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
     line = f"[{now}] {msg}\n"
 
-    # Lê linhas antigas
     if os.path.exists(LOG_FILE):
         with open(LOG_FILE, "r", encoding="utf-8") as f:
             lines = f.readlines()
     else:
         lines = []
 
-    # Adiciona nova linha
     lines.append(line)
-
-    # Mantém apenas as últimas MAX_LOG_LINES
     if len(lines) > MAX_LOG_LINES:
         lines = lines[-MAX_LOG_LINES:]
 
-    # Escreve de volta
     with open(LOG_FILE, "w", encoding="utf-8") as f:
         f.writelines(lines)
 
@@ -75,10 +70,11 @@ def executar(path):
         log(f"❌ Erro ao executar {path}: {e}")
         return None
 
-def start_process(exe_name):
-    path = os.path.join(BASE_DIR, exe_name)
+def start_process(exe_name, custom_dir=None):
+    """Executa um arquivo no diretório base ou no caminho customizado"""
+    path = os.path.join(custom_dir or BASE_DIR, exe_name)
     if os.path.exists(path):
-        log(f"▶️ Iniciando: {exe_name}")
+        log(f"▶️ Iniciando: {path}")
         return executar(path)
     else:
         log(f"⚠️ Arquivo não encontrado: {path}")
@@ -88,7 +84,6 @@ def start_process(exe_name):
 # Lógicas fixas
 # -----------------------------
 def rodar_valida():
-    """Executa o valida_bkp.exe"""
     valida_path = os.path.join(BASE_DIR, "valida_bkp.exe")
     if os.path.exists(valida_path):
         log("▶️ Rodando valida_bkp.exe")
@@ -100,7 +95,6 @@ def rodar_valida():
         log("⚠️ valida_bkp.exe não encontrado")
 
 def rodar_updater(config, versao_local, versao_remota):
-    """Executa o updater e, se atualizar, roda o valida depois"""
     updater_path = os.path.join(BASE_DIR, "updater.exe")
     if os.path.exists(updater_path):
         log(f"🔄 Nova versão detectada: {versao_remota} (local: {versao_local})")
@@ -108,10 +102,8 @@ def rodar_updater(config, versao_local, versao_remota):
         if proc:
             proc.wait()
             log("✅ Atualização concluída.")
-            # Atualiza arquivo de versão local
             with open(VERSION_FILE, "w", encoding="utf-8") as f:
                 f.write(versao_remota)
-            # Sempre roda o valida após atualizar
             rodar_valida()
     else:
         log(f"⚠️ updater.exe não encontrado em {updater_path}")
@@ -136,36 +128,55 @@ if __name__ == "__main__":
         else:
             log(f"✔️ Sistema já está na versão atual ({versao_local})")
 
-        # Rodar valida às 12h
-        agora_str = datetime.now().strftime("%H:%M")
-        if agora_str == "12:00" and last_run.get("valida") != agora_str:
-            rodar_valida()
-            last_run["valida"] = agora_str
+        agora = datetime.now()
+        agora_str = agora.strftime("%H:%M")
 
-        # Executáveis futuros via config
+        # Rodar valida às 12h (fixo)
+        if agora_str == "12:00" and last_run.get("valida") != agora.date():
+            rodar_valida()
+            last_run["valida"] = agora.date()
+
+        # Executáveis via config
         for exe_info in config.get("executar", []):
             nome = exe_info.get("nome")
             if not exe_info.get("ativo", True):
                 continue
 
+            local_exec = exe_info.get("local")  # novo campo customizado
             horario = exe_info.get("horario")
             intervalo = exe_info.get("intervalo", 0)
-            agora = datetime.now()
 
-            # Horário fixo
+            # --- HORÁRIOS FIXOS ---
             if horario:
-                if agora.strftime("%H:%M") == horario and last_run.get(nome) != horario:
-                    proc = start_process(nome)
-                    if proc:
-                        proc.wait()
-                        log(f"✅ {nome} rodou no horário {horario}")
-                    last_run[nome] = horario
+                try:
+                    # permite lista ou único horário
+                    horarios = horario if isinstance(horario, list) else [horario]
+                    hora_atual, minuto_atual = agora.hour, agora.minute
+                    minutos_atuais = hora_atual * 60 + minuto_atual
 
-            # Intervalo em minutos
+                    for h in horarios:
+                        hora_cfg, min_cfg = map(int, h.split(":"))
+                        minutos_cfg = hora_cfg * 60 + min_cfg
+                        diff = minutos_atuais - minutos_cfg
+                        chave_exec = f"{nome}_{h}"
+
+                        # executa apenas se dentro de 5 min e não rodou ainda hoje
+                        if 0 <= diff <= 5 and last_run.get(chave_exec) != agora.date():
+                            proc = start_process(nome, local_exec)
+                            if proc:
+                                proc.wait()
+                                log(f"✅ {nome} executado entre {h} e {hora_cfg:02d}:{(min_cfg+5)%60:02d}")
+                            last_run[chave_exec] = agora.date()
+                        elif diff < 0:
+                            log(f"⏳ Aguardando janela de {h}–{hora_cfg:02d}:{(min_cfg+5)%60:02d} para {nome}")
+                except Exception as e:
+                    log(f"⚠️ Erro ao processar horários para {nome}: {e}")
+
+            # --- INTERVALO EM MINUTOS ---
             elif intervalo > 0:
                 ultima_exec = last_run.get(nome)
                 if not ultima_exec or (time.time() - ultima_exec) >= intervalo * 60:
-                    proc = start_process(nome)
+                    proc = start_process(nome, local_exec)
                     if proc:
                         proc.wait()
                         log(f"✅ {nome} rodou no intervalo de {intervalo} min")
