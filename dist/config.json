@@ -12,7 +12,7 @@
   "executar": [
     {
       "nome": "ROTINA_VALIDA_BKP.bat",
-      "ativo": true,
+      "ativo": false,
       "horario": ["13:30"],
       "intervalo": 0,
       "local": "C:\\Programas"
