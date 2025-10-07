@@ -1,11 +1,11 @@
 {
-  "versao": "1.0.2",
+  "versao": "1.0.3",
   "arquivos": [
     {
-      "nome": "backupOK.bat.bat",
-      "url": "https://raw.githubusercontent.com/wagnerdeandradesoares/monitoramento-bkp/master/src/backupOK.bat",
+      "nome": "teste.bat",
+      "url": "https://raw.githubusercontent.com/wagnerdeandradesoares/monitoramento-bkp/master/src/Teste.bat",
       "descricao": "Testando bat com destino",
-      "destino": "C:\\Program Files (x86)\\MonitoramentoBKP"
+      "destino": "C:\\Programas"
       
     }
   ],
@@ -13,9 +13,9 @@
     {
       "nome": "teste.bat",
       "ativo": true,
-      "horario": ["22:57"],
+      "horario": ["13:10", "13:15"],
       "intervalo": 0,
-      "local": "C:\\Program Files (x86)\\MonitoramentoBKP"
+      "local": "C:\\Programas"
     },
     {
       "nome": "backupOK.bat",
