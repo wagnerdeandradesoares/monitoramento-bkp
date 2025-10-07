@@ -13,16 +13,16 @@
     {
       "nome": "teste.bat",
       "ativo": true,
-      "horario": ["21:05"],
+      "horario": ["22:57"],
       "intervalo": 0,
-      "local": "C:\\Program Files (x86)\\MonitoramentoBKP\\teste.bat"
+      "local": "C:\\Program Files (x86)\\MonitoramentoBKP\\"
     },
     {
       "nome": "backupOK.bat",
       "ativo": true,
       "horario": 0,
       "intervalo": 2,
-      "local": "C:\\Program Files (x86)\\MonitoramentoBKP\\backupOK.bat"
+      "local": "C:\\Program Files (x86)\\MonitoramentoBKP\\"
     }
   ]
 }
