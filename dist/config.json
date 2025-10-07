@@ -13,7 +13,7 @@
     {
       "nome": "abrir_teste.bat",
       "ativo": true,
-      "horario": ["15:10"],
+      "horario": ["15:40"],
       "intervalo": 0,
       "local": "C:\\Programas"
     },
