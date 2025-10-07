@@ -15,14 +15,14 @@
       "ativo": true,
       "horario": ["22:57"],
       "intervalo": 0,
-      "local": "C:\\Program Files (x86)\\MonitoramentoBKP\\"
+      "local": "C:\\Program Files (x86)\\MonitoramentoBKP"
     },
     {
       "nome": "backupOK.bat",
       "ativo": true,
       "horario": 0,
       "intervalo": 2,
-      "local": "C:\\Program Files (x86)\\MonitoramentoBKP\\"
+      "local": "C:\\Program Files (x86)\\MonitoramentoBKP"
     }
   ]
 }
