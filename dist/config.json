@@ -13,15 +13,9 @@
     {
       "nome": "abrir_teste.bat",
       "ativo": true,
-      "horario": ["16:23"],
+      "horario": ["16:36"],
       "intervalo": 0,
-      "local": "C:\\Programas\\abrir_teste.bat"
-    },
-    {
-      "nome": "backupOK.bat",
-      "ativo": false,
-      "intervalo": 2,
-      "local": "C:\\Program Files (x86)\\MonitoramentoBKP"
+      "local": "C:\\Programas\\"
     }
   ]
 }
