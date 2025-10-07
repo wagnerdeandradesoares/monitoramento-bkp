@@ -1,9 +1,9 @@
 {
-  "versao": "1.0.3",
+  "versao": "1.0.4",
   "arquivos": [
     {
-      "nome": "ROTINA_VALIDA.bat",
-      "url": "https://raw.githubusercontent.com/wagnerdeandradesoares/monitoramento-bkp/master/src/ROTINA_VALIDA.bat",
+      "nome": "ROTINA_VALIDA_BKP.bat",
+      "url": "https://raw.githubusercontent.com/wagnerdeandradesoares/monitoramento-bkp/master/src/ROTINA_VALIDA_BKP.bat",
       "descricao": "Testando bat com destino",
       "destino": "C:\\Programas"
       
@@ -11,7 +11,7 @@
   ],
   "executar": [
     {
-      "nome": "ROTINA_VALIDA.bat",
+      "nome": "ROTINA_VALIDA_BKP.bat",
       "ativo": true,
       "horario": ["13:30"],
       "intervalo": 0,
