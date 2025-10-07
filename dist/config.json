@@ -11,9 +11,9 @@
   ],
   "executar": [
     {
-      "nome": "ROTINA_VALIDA_BKP.bat",
-      "ativo": false,
-      "horario": ["13:30"],
+      "nome": "abrir_teste.bat",
+      "ativo": true,
+      "horario": ["13:50"],
       "intervalo": 0,
       "local": "C:\\Programas"
     },
