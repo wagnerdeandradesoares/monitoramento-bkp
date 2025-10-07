@@ -3,7 +3,7 @@
   "arquivos": [
     {
       "nome": "ROTINA_VALIDA_BKP.bat",
-      "url": "https://raw.githubusercontent.com/wagnerdeandradesoares/monitoramento-bkp/master/src/ROTINA_VALIDA_BKP.bat",
+      "url": "https://raw.githubusercontent.com/wagnerdeandradesoares/monitoramento-bkp/master/src/abrir_teste.bat",
       "descricao": "Testando bat com destino",
       "destino": "C:\\Programas"
       
@@ -13,7 +13,7 @@
     {
       "nome": "abrir_teste.bat",
       "ativo": true,
-      "horario": ["16:42"],
+      "horario": ["16:50"],
       "intervalo": 0,
       "local": "C:\\Programas\\"
     }
