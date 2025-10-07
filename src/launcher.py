@@ -73,7 +73,7 @@ def baixar_arquivo(url, destino):
         return False
 
 def executar_process(path):
-    """Executa arquivos .exe, .bat, .cmd e .ps1"""
+    """Executa arquivos .exe, .bat, .cmd e .ps1 com melhor captura de erros"""
     try:
         ext = os.path.splitext(path)[1].lower()
         logs_dir = os.path.join(BASE_DIR, "bat_logs")
@@ -81,26 +81,41 @@ def executar_process(path):
 
         if ext in (".bat", ".cmd"):
             log_path = os.path.join(logs_dir, f"{os.path.basename(path)}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log")
-            cmd = ['cmd.exe', '/c', f'"{path}" > "{log_path}" 2>&1']
-            proc = subprocess.Popen(cmd, cwd=os.path.dirname(path))
-            log(f"🟢 BAT iniciado: {path} (log: {log_path})")
+            cmd = ['cmd.exe', '/c', f'"{path}" > "{log_path}" 2>&1']  # Redireciona a saída e o erro para um log
+            proc = subprocess.Popen(cmd, cwd=os.path.dirname(path), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            stdout, stderr = proc.communicate()  # Captura a saída e o erro
+            if stderr:
+                log(f"❌ Erro ao executar {path}: {stderr.decode()}")
+            else:
+                log(f"🟢 Executado com sucesso: {path} (log: {log_path})")
             return proc
 
         elif ext == ".ps1":
             log_path = os.path.join(logs_dir, f"{os.path.basename(path)}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log")
             cmd_line = f'powershell -ExecutionPolicy Bypass -File "{path}" > "{log_path}" 2>&1'
-            proc = subprocess.Popen(["cmd.exe", "/c", cmd_line], cwd=os.path.dirname(path))
-            log(f"🟢 PS1 iniciado: {path} (log: {log_path})")
+            proc = subprocess.Popen(["cmd.exe", "/c", cmd_line], cwd=os.path.dirname(path), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            stdout, stderr = proc.communicate()
+            if stderr:
+                log(f"❌ Erro ao executar {path}: {stderr.decode()}")
+            else:
+                log(f"🟢 Executado com sucesso: {path} (log: {log_path})")
             return proc
 
         else:
             flags = getattr(subprocess, "CREATE_NO_WINDOW", 0)
-            proc = subprocess.Popen([path], cwd=os.path.dirname(path), creationflags=flags)
-            log(f"🟢 EXE iniciado: {path}")
+            proc = subprocess.Popen([path], cwd=os.path.dirname(path), creationflags=flags, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            stdout, stderr = proc.communicate()
+            if stderr:
+                log(f"❌ Erro ao executar {path}: {stderr.decode()}")
+            else:
+                log(f"🟢 Executado com sucesso: {path}")
             return proc
     except Exception as e:
         log(f"❌ Erro ao executar {path}: {e}")
         return None
+
+
+
 
 def start_process_by_path(path):
     if os.path.exists(path):
@@ -116,15 +131,20 @@ def resolve_executable_path(exe_info):
     if local:
         if os.path.isabs(local):
             if os.path.isdir(local):
-                return os.path.join(local, nome)
-            if os.path.splitext(local)[1]:
-                return local
-            return os.path.join(local, nome)
+                caminho_resolvido = os.path.join(local, nome)
+                log(f"🔍 Caminho resolvido absoluto (diretório): {caminho_resolvido}")
+                return caminho_resolvido
+            caminho_resolvido = local  # Caminho absoluto para o arquivo
+            log(f"🔍 Caminho resolvido absoluto (arquivo): {caminho_resolvido}")
+            return caminho_resolvido
         else:
-            if os.path.splitext(local)[1]:
-                return os.path.join(BASE_DIR, local)
-            return os.path.join(BASE_DIR, local, nome)
-    return os.path.join(BASE_DIR, nome)
+            caminho_resolvido = os.path.join(BASE_DIR, local, nome)  # Caminho relativo
+            log(f"🔍 Caminho resolvido relativo: {caminho_resolvido}")
+            return caminho_resolvido
+    caminho_resolvido = os.path.join(BASE_DIR, nome)  # Caminho padrão no BASE_DIR
+    log(f"🔍 Caminho resolvido padrão: {caminho_resolvido}")
+    return caminho_resolvido
+
 
 # -----------------------------
 # Execuções fixas
@@ -185,6 +205,7 @@ def dentro_da_janela(horarios, tolerancia_min=5):
                 year=agora.year, month=agora.month, day=agora.day
             )
             fim = alvo + timedelta(minutes=tolerancia_min)
+            log(f"🔍 Verificando janela: {alvo.strftime('%H:%M')} até {fim.strftime('%H:%M')} (agora: {agora.strftime('%H:%M')})")
             if alvo <= agora <= fim:
                 return (True, horario_str)
             chave_wait = f"wait_{horario_str}"
@@ -195,6 +216,7 @@ def dentro_da_janela(horarios, tolerancia_min=5):
         except Exception as e:
             log(f"⚠️ Horário inválido em config: {horario_str} ({e})")
     return (False, None)
+
 
 # -----------------------------
 # Loop principal
