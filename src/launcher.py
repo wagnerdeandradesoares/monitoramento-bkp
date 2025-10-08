@@ -73,47 +73,50 @@ def baixar_arquivo(url, destino):
         return False
 
 def executar_process(path):
-    """Executa arquivos .exe, .bat, .cmd e .ps1 com melhor captura de erros"""
+    """Executa arquivos .exe, .bat, .cmd e .ps1 (abre janela quando necessário)"""
     try:
         ext = os.path.splitext(path)[1].lower()
-        logs_dir = os.path.join(BASE_DIR, "bat_logs")
-        os.makedirs(logs_dir, exist_ok=True)
 
+        # Executa BAT ou CMD (abrindo janela)
         if ext in (".bat", ".cmd"):
-            log_path = os.path.join(logs_dir, f"{os.path.basename(path)}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log")
-            cmd = ['cmd.exe', '/c', f'"{path}" > "{log_path}" 2>&1']  # Redireciona a saída e o erro para um log
-            proc = subprocess.Popen(cmd, cwd=os.path.dirname(path), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            stdout, stderr = proc.communicate()  # Captura a saída e o erro
-            if stderr:
-                log(f"❌ Erro ao executar {path}: {stderr.decode()}")
-            else:
-                log(f"🟢 Executado com sucesso: {path} (log: {log_path})")
+            proc = subprocess.Popen(
+                ["cmd", "/c", path],
+                cwd=os.path.dirname(path),
+                creationflags=subprocess.CREATE_NEW_CONSOLE,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL
+            )
+            log(f"🟢 BAT iniciado: {path}")
             return proc
 
+        # Executa PowerShell
         elif ext == ".ps1":
-            log_path = os.path.join(logs_dir, f"{os.path.basename(path)}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log")
-            cmd_line = f'powershell -ExecutionPolicy Bypass -File "{path}" > "{log_path}" 2>&1'
-            proc = subprocess.Popen(["cmd.exe", "/c", cmd_line], cwd=os.path.dirname(path), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            stdout, stderr = proc.communicate()
-            if stderr:
-                log(f"❌ Erro ao executar {path}: {stderr.decode()}")
-            else:
-                log(f"🟢 Executado com sucesso: {path} (log: {log_path})")
+            proc = subprocess.Popen(
+                ["powershell", "-ExecutionPolicy", "Bypass", "-File", path],
+                cwd=os.path.dirname(path),
+                creationflags=subprocess.CREATE_NEW_CONSOLE,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL
+            )
+            log(f"🟢 PS1 iniciado: {path}")
             return proc
 
+        # Executa EXE ou outros (sem abrir janela)
         else:
             flags = getattr(subprocess, "CREATE_NO_WINDOW", 0)
-            proc = subprocess.Popen([path], cwd=os.path.dirname(path), creationflags=flags, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            stdout, stderr = proc.communicate()
-            if stderr:
-                log(f"❌ Erro ao executar {path}: {stderr.decode()}")
-            else:
-                log(f"🟢 Executado com sucesso: {path}")
+            proc = subprocess.Popen(
+                [path],
+                cwd=os.path.dirname(path),
+                creationflags=flags,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL
+            )
+            log(f"🟢 EXE iniciado: {path}")
             return proc
+
     except Exception as e:
         log(f"❌ Erro ao executar {path}: {e}")
         return None
-
 
 
 
