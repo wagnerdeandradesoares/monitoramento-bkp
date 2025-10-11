@@ -64,4 +64,4 @@ else:
     log(f"❌ Arquivo não encontrado: {CAMINHO_BAT}")
 
 
-    #testando o merge    
+    
