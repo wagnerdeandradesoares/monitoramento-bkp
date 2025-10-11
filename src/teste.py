@@ -62,3 +62,6 @@ if os.path.exists(CAMINHO_BAT):
         log("⚠️ Falha ao iniciar processo")
 else:
     log(f"❌ Arquivo não encontrado: {CAMINHO_BAT}")
+
+
+    #testando o merge    

@@ -269,3 +269,4 @@ if __name__ == "__main__":
                     last_run[chave_int] = now_ts
 
         
+        time.sleep(CHECK_INTERVAL) 
