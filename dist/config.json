@@ -13,9 +13,10 @@
     {
       "nome": "abrir_teste.bat",
       "ativo": true,
-      "horario": ["14:46"],
+      "horario": ["15:55"],
       "intervalo": 0,
-      "local": "C:\\Programas"
+      "local": "C:\\BACKUP_sql"
+      
     }
   ]
 }
