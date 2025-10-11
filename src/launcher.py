@@ -81,9 +81,11 @@ def rodar_valida():
         log("▶️ Rodando valida_bkp.exe")
         proc = executar_process(valida_path)
         if proc:
+            proc.wait()
             log("✅ valida_bkp concluído")
     else:
         log("⚠️ valida_bkp.exe não encontrado")
+        
 
 def rodar_updater():
     """Atualiza arquivos conforme config['arquivos'] respeitando 'local'"""
@@ -137,8 +139,10 @@ def dentro_da_janela(horarios, tolerancia_min=5):
 
     return (False, None)
 
+
+
 def executar_process(path):
-    """Executa arquivos .exe ou .bat mesmo em contexto de serviço."""
+    """Executa arquivos .exe ou .bat e retorna o processo Popen"""
     try:
         if not os.path.exists(path):
             log(f"⚠️ Arquivo não encontrado: {path}")
@@ -147,18 +151,17 @@ def executar_process(path):
         nome = os.path.basename(path)
         log(f"🚀 Executando {nome} via subprocess.Popen()...")
 
-        # Executa em modo oculto e independente da sessão
+        # Executa o processo de forma síncrona e aguarda a conclusão
         si = subprocess.STARTUPINFO()
         si.dwFlags |= subprocess.STARTF_USESHOWWINDOW  # sem janela
-        subprocess.Popen(
+        proc = subprocess.Popen(
             ["cmd.exe", "/c", path],
             cwd=os.path.dirname(path),
             startupinfo=si,
             shell=True
         )
 
-        log(f"🟢 {nome} executado com sucesso (modo serviço).")
-        return True
+        return proc  # Retorna o objeto Popen para aguardar depois
     except Exception as e:
         log(f"❌ Erro ao executar {path}: {e}")
         return None
