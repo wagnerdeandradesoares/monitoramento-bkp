@@ -72,83 +72,6 @@ def baixar_arquivo(url, destino):
         log(f"❌ Erro ao baixar {url}: {e}")
         return False
 
-def executar_process(path):
-    """Executa arquivos .exe, .bat, .cmd e .ps1 (abre janela quando necessário)"""
-    try:
-        ext = os.path.splitext(path)[1].lower()
-
-        # Executa BAT ou CMD (abrindo janela)
-        if ext in (".bat", ".cmd"):
-            proc = subprocess.Popen(
-                ["cmd", "/c", path],
-                cwd=os.path.dirname(path),
-                creationflags=subprocess.CREATE_NEW_CONSOLE,
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL
-            )
-            log(f"🟢 BAT iniciado: {path}")
-            return proc
-
-        # Executa PowerShell
-        elif ext == ".ps1":
-            proc = subprocess.Popen(
-                ["powershell", "-ExecutionPolicy", "Bypass", "-File", path],
-                cwd=os.path.dirname(path),
-                creationflags=subprocess.CREATE_NEW_CONSOLE,
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL
-            )
-            log(f"🟢 PS1 iniciado: {path}")
-            return proc
-
-        # Executa EXE ou outros (sem abrir janela)
-        else:
-            flags = getattr(subprocess, "CREATE_NO_WINDOW", 0)
-            proc = subprocess.Popen(
-                [path],
-                cwd=os.path.dirname(path),
-                creationflags=flags,
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL
-            )
-            log(f"🟢 EXE iniciado: {path}")
-            return proc
-
-    except Exception as e:
-        log(f"❌ Erro ao executar {path}: {e}")
-        return None
-
-
-
-def start_process_by_path(path):
-    if os.path.exists(path):
-        log(f"▶️ Iniciando: {path}")
-        return executar_process(path)
-    else:
-        log(f"⚠️ Arquivo não encontrado: {path}")
-        return None
-
-def resolve_executable_path(exe_info):
-    nome = exe_info.get("nome")
-    local = exe_info.get("local")
-    if local:
-        if os.path.isabs(local):
-            if os.path.isdir(local):
-                caminho_resolvido = os.path.join(local, nome)
-                log(f"🔍 Caminho resolvido absoluto (diretório): {caminho_resolvido}")
-                return caminho_resolvido
-            caminho_resolvido = local  # Caminho absoluto para o arquivo
-            log(f"🔍 Caminho resolvido absoluto (arquivo): {caminho_resolvido}")
-            return caminho_resolvido
-        else:
-            caminho_resolvido = os.path.join(BASE_DIR, local, nome)  # Caminho relativo
-            log(f"🔍 Caminho resolvido relativo: {caminho_resolvido}")
-            return caminho_resolvido
-    caminho_resolvido = os.path.join(BASE_DIR, nome)  # Caminho padrão no BASE_DIR
-    log(f"🔍 Caminho resolvido padrão: {caminho_resolvido}")
-    return caminho_resolvido
-
-
 # -----------------------------
 # Execuções fixas
 # -----------------------------
@@ -158,42 +81,38 @@ def rodar_valida():
         log("▶️ Rodando valida_bkp.exe")
         proc = executar_process(valida_path)
         if proc:
-            proc.wait()
             log("✅ valida_bkp concluído")
     else:
         log("⚠️ valida_bkp.exe não encontrado")
 
-def rodar_updater(config, versao_local, versao_remota):
+def rodar_updater():
     """Atualiza arquivos conforme config['arquivos'] respeitando 'local'"""
     log(f"🔄 Nova versão detectada: {versao_remota} (local: {versao_local})")
 
-    for arq in config.get("arquivos", []):
-        nome = arq.get("nome")
-        url = arq.get("url")
-        local = arq.get("local")
-        if not nome or not url:
-            continue
+    updater_path = os.path.join(BASE_DIR, "updater.exe")
+    if os.path.exists(updater_path):
+        log("▶️ Rodando updater.exe")
+        proc = executar_process(updater_path)
+        if proc:
+            proc.wait()
+            log("✅ updater.exe concluído")
+            rodar_valida()  # Executa valida_bkp após atualização
+    else:
+        log("⚠️ updater.exe não encontrado")
 
-        if local:
-            if os.path.isabs(local):
-                destino = local if os.path.splitext(local)[1] else os.path.join(local, nome)
-            else:
-                destino = os.path.join(BASE_DIR, local, nome)
-        else:
-            destino = os.path.join(BASE_DIR, nome)
+    
 
-        if baixar_arquivo(url, destino):
-            log(f"✅ {nome} atualizado em {destino}")
+def start_process_by_path(path):
+    """Verifica existência e executa o arquivo"""
+    if os.path.exists(path):
+        log(f"▶️ Iniciando: {path}")
+        return executar_process(path)
+    else:
+        log(f"⚠️ Arquivo não encontrado: {path}")
+        return None
 
-    with open(VERSION_FILE, "w", encoding="utf-8") as f:
-        f.write(versao_remota)
-
-    rodar_valida()
-
-# -----------------------------
-# Função de janela (5 min)
-# -----------------------------
 def dentro_da_janela(horarios, tolerancia_min=5):
+    """Verifica se o horário atual está dentro da janela"""
     agora = datetime.now()
     if horarios is None:
         return (False, None)
@@ -208,18 +127,65 @@ def dentro_da_janela(horarios, tolerancia_min=5):
                 year=agora.year, month=agora.month, day=agora.day
             )
             fim = alvo + timedelta(minutes=tolerancia_min)
-            log(f"🔍 Verificando janela: {alvo.strftime('%H:%M')} até {fim.strftime('%H:%M')} (agora: {agora.strftime('%H:%M')})")
             if alvo <= agora <= fim:
+                log(f"✅ Dentro da janela de {horario_str}")
                 return (True, horario_str)
-            chave_wait = f"wait_{horario_str}"
-            ultima = _last_wait_log.get(chave_wait, 0)
-            if time.time() - ultima >= 60:
-                _last_wait_log[chave_wait] = time.time()
-                log(f"⏳ Aguardando horário {horario_str}–{fim.strftime('%H:%M')}...")
+            else:
+                log(f"🕒 Fora da janela: {horario_str} (agora {agora.strftime('%H:%M')})")
         except Exception as e:
             log(f"⚠️ Horário inválido em config: {horario_str} ({e})")
+
     return (False, None)
 
+def executar_process(path):
+    """Executa arquivos .exe ou .bat mesmo em contexto de serviço."""
+    try:
+        if not os.path.exists(path):
+            log(f"⚠️ Arquivo não encontrado: {path}")
+            return None
+
+        nome = os.path.basename(path)
+        log(f"🚀 Executando {nome} via subprocess.Popen()...")
+
+        # Executa em modo oculto e independente da sessão
+        si = subprocess.STARTUPINFO()
+        si.dwFlags |= subprocess.STARTF_USESHOWWINDOW  # sem janela
+        subprocess.Popen(
+            ["cmd.exe", "/c", path],
+            cwd=os.path.dirname(path),
+            startupinfo=si,
+            shell=True
+        )
+
+        log(f"🟢 {nome} executado com sucesso (modo serviço).")
+        return True
+    except Exception as e:
+        log(f"❌ Erro ao executar {path}: {e}")
+        return None
+
+
+def resolve_executable_path(exe_info):
+    """Resolve o caminho absoluto do executável com base no config"""
+    nome = exe_info.get("nome")
+    local = exe_info.get("local")
+
+    if not nome:
+        log("⚠️ Nenhum nome de arquivo especificado no config.")
+        return None
+
+    if local:
+        if os.path.isabs(local):
+            caminho = os.path.join(local, nome) if os.path.isdir(local) else local
+            log(f"🔍 Caminho absoluto resolvido: {caminho}")
+            return caminho
+        else:
+            caminho = os.path.join(BASE_DIR, local, nome)
+            log(f"🔍 Caminho relativo resolvido: {caminho}")
+            return caminho
+
+    caminho = os.path.join(BASE_DIR, nome)
+    log(f"🔍 Caminho padrão resolvido: {caminho}")
+    return caminho
 
 # -----------------------------
 # Loop principal
@@ -236,7 +202,7 @@ if __name__ == "__main__":
         versao_local = ler_versao_local()
 
         if comparar_versoes(versao_local, versao_remota):
-            rodar_updater(config, versao_local, versao_remota)
+            rodar_updater()
         else:
             log(f"✔️ Sistema já está na versão atual ({versao_local})")
 
@@ -266,10 +232,7 @@ if __name__ == "__main__":
                 if dentro and horario_str:
                     chave_hor = f"{nome}__hor__{horario_str}__{agora.strftime('%Y-%m-%d')}"
                     if not last_run.get(chave_hor):
-                        proc = start_process_by_path(caminho_exe)
-                        if proc:
-                            proc.wait()
-                            log(f"✅ {nome} executado na janela {horario_str} (+5min)")
+                        start_process_by_path(caminho_exe)
                         last_run[chave_hor] = True
 
             # Intervalo
@@ -278,10 +241,7 @@ if __name__ == "__main__":
                 ultima = last_run.get(chave_int)
                 now_ts = time.time()
                 if not ultima or (now_ts - ultima) >= (intervalo * 60):
-                    proc = start_process_by_path(caminho_exe)
-                    if proc:
-                        proc.wait()
-                        log(f"✅ {nome} executou por intervalo ({intervalo} min)")
+                    start_process_by_path(caminho_exe)
                     last_run[chave_int] = now_ts
 
         time.sleep(CHECK_INTERVAL)
