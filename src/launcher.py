@@ -268,4 +268,4 @@ if __name__ == "__main__":
                     start_process_by_path(caminho_exe)
                     last_run[chave_int] = now_ts
 
-        time.sleep(CHECK_INTERVAL)
+        
