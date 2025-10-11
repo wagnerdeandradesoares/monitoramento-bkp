@@ -61,7 +61,7 @@ if os.path.exists(CAMINHO_BAT):
     else:
         log("⚠️ Falha ao iniciar processo")
 else:
-    log(f"❌ Arquivo não encontrado: {CAMINHO_BAT}")
+    log(f"❌ Arquivo não encontrado: {CAMINHO_BAT}") 
 
-
+ 
     
