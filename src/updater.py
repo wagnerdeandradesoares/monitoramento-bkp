@@ -8,16 +8,35 @@ from datetime import datetime
 # -----------------------------
 CONFIG_URL = "https://raw.githubusercontent.com/wagnerdeandradesoares/monitoramento-bkp/master/dist/config.json"
 BASE_DIR = r"C:\Program Files (x86)\MonitoramentoBKP"
-LOG_FILE = os.path.join(BASE_DIR, "updater.log")
+LOG_BASE_DIR = os.path.join(BASE_DIR, "logs")
 VERSION_FILE = os.path.join(BASE_DIR, "versao.txt")
 MAX_LOG_LINES = 100
+
+
+
+def garantir_diretorio_logs():
+    """Garante que a pasta 'logs' exista"""
+    if not os.path.exists(LOG_BASE_DIR):  # Verifica se a pasta não existe
+        try:
+            os.makedirs(LOG_BASE_DIR, exist_ok=True)  # Cria a pasta
+            print(f"✅ Pasta de logs criada: {LOG_BASE_DIR}")
+        except Exception as e:
+            print(f"❌ Erro ao criar a pasta de logs: {e}")
+            raise  # Re-levanta a exceção caso falhe
 
 # -----------------------------
 # Funções de log
 # -----------------------------
+# Função de log
 def log(msg):
     now = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
     line = f"[{now}] {msg}\n"
+    
+    # Garantir que a pasta de logs exista antes de gravar
+    garantir_diretorio_logs()
+
+    # Define o arquivo de log
+    LOG_FILE = os.path.join(LOG_BASE_DIR, "updater.log")  # Pode mudar o nome conforme necessário
 
     # Mantém no máximo as últimas MAX_LOG_LINES
     lines = []

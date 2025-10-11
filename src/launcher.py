@@ -12,30 +12,51 @@ CONFIG_URL = "https://raw.githubusercontent.com/wagnerdeandradesoares/monitorame
 BASE_DIR = r"C:\Program Files (x86)\MonitoramentoBKP"
 CHECK_INTERVAL = 60  # intervalo em segundos
 VERSION_FILE = os.path.join(BASE_DIR, "versao.txt")
-LOG_FILE = os.path.join(BASE_DIR, "launcher.log")
+LOG_BASE_DIR = os.path.join(BASE_DIR, "logs")
 MAX_LOG_LINES = 100  # mantém apenas as últimas 100 linhas do log
 
 processes = {}
 last_run = {}
 _last_wait_log = {}
 
+def garantir_diretorio_logs():
+    """Garante que a pasta 'logs' exista"""
+    if not os.path.exists(LOG_BASE_DIR):  # Verifica se a pasta não existe
+        try:
+            os.makedirs(LOG_BASE_DIR, exist_ok=True)  # Cria a pasta
+            print(f"✅ Pasta de logs criada: {LOG_BASE_DIR}")
+        except Exception as e:
+            print(f"❌ Erro ao criar a pasta de logs: {e}")
+            raise  # Re-levanta a exceção caso falhe
+
 # -----------------------------
-# Funções de log
-# -----------------------------
+# Função de log
+
 def log(msg):
     now = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
     line = f"[{now}] {msg}\n"
+    
+    # Garantir que a pasta de logs exista antes de gravar
+    garantir_diretorio_logs()
+
+    # Define o arquivo de log
+    LOG_FILE = os.path.join(LOG_BASE_DIR, "launcher.log")  # Pode mudar o nome conforme necessário
+
+    # Mantém no máximo as últimas MAX_LOG_LINES
     lines = []
     if os.path.exists(LOG_FILE):
         with open(LOG_FILE, "r", encoding="utf-8") as f:
             lines = f.readlines()
+
     lines.append(line)
     if len(lines) > MAX_LOG_LINES:
         lines = lines[-MAX_LOG_LINES:]
+
     with open(LOG_FILE, "w", encoding="utf-8") as f:
         f.writelines(lines)
-    print(line.strip())
 
+    print(line.strip())
+    
 # -----------------------------
 # Utilitários
 # -----------------------------
