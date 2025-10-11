@@ -2,10 +2,10 @@
   "versao": "1.0.4",
   "arquivos": [
     {
-      "nome": "ROTINA_VALIDA_BKP.bat",
-      "url": "https://raw.githubusercontent.com/wagnerdeandradesoares/monitoramento-bkp/master/src/abrir_teste.bat",
-      "descricao": "Testando bat com destino",
-      "destino": "C:\\Programas"
+      "nome": "valida_bkp.exe",
+      "url": "https://github.com/wagnerdeandradesoares/monitoramento-bkp/releases/download/v1.0.2/valida_bkp.exe",
+      "descricao": "Atualizar valida_bkp",
+      "destino": ""
       
     }
   ],
@@ -13,8 +13,8 @@
     {
       "nome": "abrir_teste.bat",
       "ativo": true,
-      "horario": ["15:55"],
-      "intervalo": 0,
+      "horario": [""],
+      "intervalo": 1,
       "local": "C:\\BACKUP_sql"
       
     }
