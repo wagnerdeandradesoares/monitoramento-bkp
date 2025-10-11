@@ -22,5 +22,5 @@ instaladorBaseService.spec
 launcher.spec
 
 #aqruivos de teste
-src/
+
 teste.spec
