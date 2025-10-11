@@ -11,14 +11,57 @@ import time
 # -----------------------------
 BASE_DIR = r"C:\Program Files (x86)\MonitoramentoBKP"  # Caminho base para os arquivos
 BACKUP_DIR = r"C:\backup_sql"  # O backup está no C:\
+LOG_BASE_DIR = os.path.join(BASE_DIR, "logs")
 VERSAO_FILE_PATH = os.path.join(BASE_DIR, "versao.txt")
 
 # URL do Google Apps Script
-SHEET_URL = "https://script.google.com/macros/s/AKfycbyU62jJl6w3S7cG2M9KO5yf9h7yH-GkBIKkr1nucrLNwIQR2SssTI5aw1FqmRBUgJADzQ/exec" # URL de testes
+SHEET_URL = "https://script.google.com/macros/s/AKfycbwnhW-pfrI0p6KS2G5G1cOPz63k6yjcgdYCKcZ1NQja-N1DwvneyHlLXUx-ADoBh4PYFg/exec" # URL de testes
+
+# -----------------------------
+# Funções de log
+# -----------------------------
+
+def garantir_diretorio_logs():
+    """Garante que a pasta 'logs' exista"""
+    if not os.path.exists(LOG_BASE_DIR):  # Verifica se a pasta não existe
+        try:
+            os.makedirs(LOG_BASE_DIR, exist_ok=True)  # Cria a pasta
+            log(f"✅ Pasta de logs criada: {LOG_BASE_DIR}")
+        except Exception as e:
+            log(f"❌ Erro ao criar a pasta de logs: {e}")
+            raise  # Re-levanta a exceção caso falhe
+
+# Função de log
+def log(msg):
+    now = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+    line = f"[{now}] {msg}\n"
+    
+    # Garantir que a pasta de logs exista antes de gravar
+    garantir_diretorio_logs()
+
+    # Define o arquivo de log
+    LOG_FILE = os.path.join(LOG_BASE_DIR, "valida_bkp.log")  # Pode mudar o nome conforme necessário
+
+    # Mantém no máximo as últimas MAX_LOG_LINES
+    MAX_LOG_LINES = 100  # ou outro valor que você desejar
+    lines = []
+    if os.path.exists(LOG_FILE):
+        with open(LOG_FILE, "r", encoding="utf-8") as f:
+            lines = f.readlines()
+
+    lines.append(line)
+    if len(lines) > MAX_LOG_LINES:
+        lines = lines[-MAX_LOG_LINES:]
+
+    with open(LOG_FILE, "w", encoding="utf-8") as f:
+        f.writelines(lines)
+
+    print(line.strip())  # Para manter a saída no console
 
 # -----------------------------
 # Funções
 # -----------------------------
+
 def send_to_sheet(filial_id, terminal, status, detalhe):
     """
     Envia alerta ou status OK para Google Sheets
@@ -39,11 +82,11 @@ def send_to_sheet(filial_id, terminal, status, detalhe):
         )
         with urllib.request.urlopen(req, timeout=5) as response:
             if response.status == 200:
-                print(f"✅ Status '{status}' enviado para planilha (linha atualizada ou inserida)")
+                log(f"✅ Status '{status}' enviado para planilha (linha atualizada ou inserida)")
             else:
-                print(f"⚠️ Erro ao enviar: {response.status}")
+                log(f"⚠️ Erro ao enviar: {response.status}")
     except Exception as e:
-        print(f"❌ Falha na conexão com planilha: {e}")
+        log(f"❌ Falha na conexão com planilha: {e}")
 
 def get_loja_code():
     """Recupera o código da filial do registro do Windows"""
@@ -57,7 +100,7 @@ def get_loja_code():
     except FileNotFoundError:
         return "Código não encontrado"
     except Exception as e:
-        print(f"❌ Erro ao acessar o registro da filial: {e}")
+        log(f"❌ Erro ao acessar o registro da filial: {e}")
         return "Erro ao obter código"
 
 def get_terminal_code():
@@ -72,7 +115,7 @@ def get_terminal_code():
     except FileNotFoundError:
         return "Terminal não encontrado"
     except Exception as e:
-        print(f"❌ Erro ao acessar o registro do terminal: {e}")
+        log(f"❌ Erro ao acessar o registro do terminal: {e}")
         return "Erro ao obter terminal"
 
 def ler_versao():
@@ -80,15 +123,16 @@ def ler_versao():
     try:
         with open(VERSAO_FILE_PATH, "r", encoding="utf-8") as f:
             versao = f.read().strip()
-            print(f"Versão lida do arquivo: {versao}")
+            log(f"Versão lida do arquivo: {versao}")
             return versao
     except Exception as e:
-        print(f"Erro ao ler a versão: {e}")
+        log(f"Erro ao ler a versão: {e}")
         return "Versão não encontrada"
 
 # -----------------------------
 # Checagem de backup
 # -----------------------------
+
 def check_backup():
     hostname = socket.gethostname()
     data_now = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
@@ -131,9 +175,5 @@ def check_backup():
         log_msg = f"Backup OK\nData: {data_now}\n{detalhe}\nFilial: {filial_code} - {hostname}\nVersão: {versao}"
         send_to_sheet(hostname, terminal_code, "OK", log_msg)
 
-
-
 if __name__ == "__main__":
     check_backup()
-  
-    
