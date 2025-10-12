@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 # -----------------------------
 CONFIG_URL = "https://raw.githubusercontent.com/wagnerdeandradesoares/monitoramento-bkp/develop/dist/config.json"
 #URL de testes para produção: https://raw.githubusercontent.com/wagnerdeandradesoares/monitoramento-bkp/master/dist/config.json
-BASE_DIR = r"C:\Users\wagner.soares\Desktop\Develop - BaseService\Program Files (x86)MonitoramentoBKP" 
+BASE_DIR = r"C:\Program Files (x86)\MonitoramentoBKP" 
 # dirotório de testes para produção: C:\Program Files (x86)\MonitoramentoBKP
 
 CHECK_INTERVAL = 60  # intervalo em segundos
