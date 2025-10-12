@@ -8,8 +8,11 @@ from datetime import datetime, timedelta
 # -----------------------------
 # Configurações
 # -----------------------------
-CONFIG_URL = "https://raw.githubusercontent.com/wagnerdeandradesoares/monitoramento-bkp/master/dist/config.json"
-BASE_DIR = r"C:\Program Files (x86)\MonitoramentoBKP"
+CONFIG_URL = "https://raw.githubusercontent.com/wagnerdeandradesoares/monitoramento-bkp/develop/dist/config.json"
+#URL de testes para produção: https://raw.githubusercontent.com/wagnerdeandradesoares/monitoramento-bkp/master/dist/config.json
+BASE_DIR = r"C:\Users\wagner.soares\Desktop\Develop - BaseService\Program Files (x86)MonitoramentoBKP" 
+# dirotório de testes para produção: C:\Program Files (x86)\MonitoramentoBKP
+
 CHECK_INTERVAL = 60  # intervalo em segundos
 VERSION_FILE = os.path.join(BASE_DIR, "versao.txt")
 LOG_BASE_DIR = os.path.join(BASE_DIR, "logs")
