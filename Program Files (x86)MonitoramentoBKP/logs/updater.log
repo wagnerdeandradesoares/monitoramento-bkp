@@ -1,7 +1,1 @@
-[11/10/2025 23:12:15] 🚀 Iniciando processo de atualização
-[11/10/2025 23:12:16] 🔎 Versão remota encontrada: 1.0.0
-[11/10/2025 23:12:16] ⬇️ Atualizando 'valida_bkp.exe'
-[11/10/2025 23:12:16] 📁 Destino: C:\Program Files (x86)\MonitoramentoBKP\valida_bkp.exe
-[11/10/2025 23:12:16] ❌ Erro ao baixar https://github.com/wagnerdeandradesoares/monitoramento-bkp/releases/download/v1.0.2/valida_bkp.exe: [WinError 5] Acesso negado: 'C:\\Program Files (x86)\\MonitoramentoBKP'
-[11/10/2025 23:12:16] 💾 Versão local atualizada para 1.0.0
-[11/10/2025 23:12:16] 🏁 Atualização concluída com sucesso!
+
