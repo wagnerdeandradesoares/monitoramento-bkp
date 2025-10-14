@@ -11,7 +11,7 @@ import time
 # -----------------------------
 BASE_DIR = r"C:/--Program Files (x86)/MonitoramentoBKP" 
 # dirotório de testes para produção: C:\Program Files (x86)\MonitoramentoBKP
-BACKUP_DIR = r"C:\backup_sql"  # O backup está no C:\
+BACKUP_DIR = r"C:/backup_sql"  # O backup está no C:\
 LOG_BASE_DIR = os.path.join(BASE_DIR, "logs")
 VERSAO_FILE_PATH = os.path.join(BASE_DIR, "versao.txt")
 

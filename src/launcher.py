@@ -3,6 +3,7 @@ import time
 import os
 import urllib.request
 import json
+import random
 from datetime import datetime, timedelta
 
 # -----------------------------
@@ -22,30 +23,24 @@ processes = {}
 last_run = {}
 _last_wait_log = {}
 
+# -----------------------------
+# Função de log
+# -----------------------------
 def garantir_diretorio_logs():
-    """Garante que a pasta 'logs' exista"""
-    if not os.path.exists(LOG_BASE_DIR):  # Verifica se a pasta não existe
+    if not os.path.exists(LOG_BASE_DIR):
         try:
-            os.makedirs(LOG_BASE_DIR, exist_ok=True)  # Cria a pasta
+            os.makedirs(LOG_BASE_DIR, exist_ok=True)
             print(f"✅ Pasta de logs criada: {LOG_BASE_DIR}")
         except Exception as e:
             print(f"❌ Erro ao criar a pasta de logs: {e}")
-            raise  # Re-levanta a exceção caso falhe
-
-# -----------------------------
-# Função de log
+            raise
 
 def log(msg):
     now = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
     line = f"[{now}] {msg}\n"
-    
-    # Garantir que a pasta de logs exista antes de gravar
     garantir_diretorio_logs()
+    LOG_FILE = os.path.join(LOG_BASE_DIR, "launcher.log")
 
-    # Define o arquivo de log
-    LOG_FILE = os.path.join(LOG_BASE_DIR, "launcher.log")  # Pode mudar o nome conforme necessário
-
-    # Mantém no máximo as últimas MAX_LOG_LINES
     lines = []
     if os.path.exists(LOG_FILE):
         with open(LOG_FILE, "r", encoding="utf-8") as f:
@@ -59,25 +54,46 @@ def log(msg):
         f.writelines(lines)
 
     print(line.strip())
-    
+
 # -----------------------------
 # Utilitários
 # -----------------------------
 def baixar_config():
+    """Baixa o config remoto forçando atualização (evita cache do GitHub)"""
     try:
-        with urllib.request.urlopen(CONFIG_URL, timeout=10) as response:
+        # Adiciona um parâmetro aleatório à URL para burlar cache da CDN do GitHub
+        url = f"{CONFIG_URL}?nocache={random.randint(1000, 999999)}"
+        log(f"🌐 Baixando config atualizado: {url}")
+
+        with urllib.request.urlopen(url, timeout=10) as response:
             if response.status == 200:
-                return json.loads(response.read().decode())
+                data = json.loads(response.read().decode())
+                log("✅ Config baixado e carregado com sucesso")
+                return data
+            else:
+                log(f"⚠️ Resposta HTTP inesperada: {response.status}")
     except Exception as e:
         log(f"❌ Erro ao baixar config JSON: {e}")
     return None
 
 def ler_versao_local():
+    """
+    Lê a versão e o tipo de terminal (SERVIDOR, CX1, CX2 etc.)
+    Exemplo de versao.txt:
+    1.0.4|SERVIDOR
+    1.0.4|CX1
+    1.0.4|CX2
+    """
     try:
         with open(VERSION_FILE, "r", encoding="utf-8") as f:
-            return f.read().strip()
-    except:
-        return "0.0.0"
+            conteudo = f.read().strip()
+            partes = conteudo.split("|")
+            versao = partes[0].strip()
+            tipo = partes[1].strip().upper() if len(partes) > 1 else "CX1"
+            return versao, tipo
+    except Exception as e:
+        log(f"⚠️ Erro ao ler versao.txt: {e}")
+        return "0.0.0", "CX1"
 
 def comparar_versoes(v1, v2):
     try:
@@ -86,7 +102,6 @@ def comparar_versoes(v1, v2):
         return False
 
 def baixar_arquivo(url, destino):
-    """Baixa um arquivo para o destino especificado."""
     try:
         os.makedirs(os.path.dirname(destino), exist_ok=True)
         urllib.request.urlretrieve(url, destino)
@@ -109,12 +124,9 @@ def rodar_valida():
             log("✅ valida_bkp concluído")
     else:
         log("⚠️ valida_bkp.exe não encontrado")
-        
 
 def rodar_updater():
-    """Atualiza arquivos conforme config['arquivos'] respeitando 'local'"""
     log(f"🔄 Nova versão detectada: {versao_remota} (local: {versao_local})")
-
     updater_path = os.path.join(BASE_DIR, "updater.exe")
     if os.path.exists(updater_path):
         log("▶️ Rodando updater.exe")
@@ -122,14 +134,11 @@ def rodar_updater():
         if proc:
             proc.wait()
             log("✅ updater.exe concluído")
-            rodar_valida()  # Executa valida_bkp após atualização
+            rodar_valida()
     else:
         log("⚠️ updater.exe não encontrado")
 
-    
-
 def start_process_by_path(path):
-    """Verifica existência e executa o arquivo"""
     if os.path.exists(path):
         log(f"▶️ Iniciando: {path}")
         return executar_process(path)
@@ -138,7 +147,6 @@ def start_process_by_path(path):
         return None
 
 def dentro_da_janela(horarios, tolerancia_min=5):
-    """Verifica se o horário atual está dentro da janela"""
     agora = datetime.now()
     if horarios is None:
         return (False, None)
@@ -163,10 +171,7 @@ def dentro_da_janela(horarios, tolerancia_min=5):
 
     return (False, None)
 
-
-
 def executar_process(path):
-    """Executa arquivos .exe ou .bat e retorna o processo Popen"""
     try:
         if not os.path.exists(path):
             log(f"⚠️ Arquivo não encontrado: {path}")
@@ -175,9 +180,8 @@ def executar_process(path):
         nome = os.path.basename(path)
         log(f"🚀 Executando {nome} via subprocess.Popen()...")
 
-        # Executa o processo de forma síncrona e aguarda a conclusão
         si = subprocess.STARTUPINFO()
-        si.dwFlags |= subprocess.STARTF_USESHOWWINDOW  # sem janela
+        si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
         proc = subprocess.Popen(
             ["cmd.exe", "/c", path],
             cwd=os.path.dirname(path),
@@ -185,14 +189,12 @@ def executar_process(path):
             shell=True
         )
 
-        return proc  # Retorna o objeto Popen para aguardar depois
+        return proc
     except Exception as e:
         log(f"❌ Erro ao executar {path}: {e}")
         return None
 
-
 def resolve_executable_path(exe_info):
-    """Resolve o caminho absoluto do executável com base no config"""
     nome = exe_info.get("nome")
     local = exe_info.get("local")
 
@@ -226,7 +228,8 @@ if __name__ == "__main__":
             continue
 
         versao_remota = config.get("versao", "0.0.0")
-        versao_local = ler_versao_local()
+        versao_local, tipo_terminal = ler_versao_local()
+        log(f"💻 Tipo deste terminal: {tipo_terminal}")
 
         if comparar_versoes(versao_local, versao_remota):
             rodar_updater()
@@ -235,7 +238,6 @@ if __name__ == "__main__":
 
         agora = datetime.now()
 
-        # --- Execução fixa diária do valida_bkp às 12:00 (janela 12:00–12:05) ---
         ok, horario_encontrado = dentro_da_janela("12:00")
         if ok:
             chave_valida = f"valida_{agora.strftime('%Y-%m-%d')}"
@@ -247,6 +249,11 @@ if __name__ == "__main__":
         for exe_info in config.get("executar", []):
             nome = exe_info.get("nome")
             if not nome or not exe_info.get("ativo", True):
+                continue
+
+            tipos_permitidos = [t.upper() for t in exe_info.get("terminal", [])]
+            if tipos_permitidos and tipo_terminal not in tipos_permitidos:
+                log(f"💡 Execução '{nome}' ignorada — permitida apenas para {tipos_permitidos}.")
                 continue
 
             horario = exe_info.get("horario")
@@ -271,5 +278,4 @@ if __name__ == "__main__":
                     start_process_by_path(caminho_exe)
                     last_run[chave_int] = now_ts
 
-        
-       # time.sleep(CHECK_INTERVAL) 
+        time.sleep(CHECK_INTERVAL)
