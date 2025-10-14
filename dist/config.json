@@ -14,9 +14,18 @@
       "nome": "abrir_teste.bat",
       "ativo": false,
       "horario": 0,
-      "intervalo": 1,
-      "local": "C:\\BACKUP_sql"
+      "intervalo": 2,
+      "local": "C:/--Program Files (x86)/MonitoramentoBKP",
+      "terminal": ["CX1", "CX2"]
       
-    }
+    },
+    {
+    "nome": "sincroniza_caixa.bat",
+    "ativo": false,
+    "horario": 0,
+    "intervalo": 0,
+    "local": "C:\\BACKUP_sql",
+    "terminal": ["CX1", "CX2"]
+  }
   ]
 }
