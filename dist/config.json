@@ -14,7 +14,7 @@
       "nome": "abrir_teste.bat",
       "ativo": true,
       "horario": 0,
-      "intervalo": 2,
+      "intervalo": 1,
       "local": "C:\\--Program Files (x86)\\MonitoramentoBKP",
       "terminal": ["servidor"]
       
