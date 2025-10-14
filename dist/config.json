@@ -16,7 +16,7 @@
       "horario": 0,
       "intervalo": 2,
       "local": "C:\\--Program Files (x86)\\MonitoramentoBKP",
-      "terminal": ["servidor"]
+      "terminal": ["CX1","CX2"]
       
     },
     {
