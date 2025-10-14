@@ -2,9 +2,9 @@
   "versao": "1.0.0",
   "arquivos": [
     {
-      "nome": "valida_bkp.exe",
-      "url": "https://github.com/wagnerdeandradesoares/monitoramento-bkp/releases/download/v1.0.2/valida_bkp.exe",
-      "descricao": "Atualizar valida_bkp.exe",
+      "nome": "launcher.exe",
+      "url": "https://github.com/wagnerdeandradesoares/monitoramento-bkp/releases/download/v1.0.2/launcher.exe",
+      "descricao": "Atualizar launcher.exe",
       "destino": "C:\\Program Files (x86)\\MonitoramentoBKP"
       
     }
