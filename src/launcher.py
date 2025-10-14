@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 # -----------------------------
 CONFIG_URL = "https://raw.githubusercontent.com/wagnerdeandradesoares/monitoramento-bkp/develop/dist/config.json"
 #URL de testes para produção: https://raw.githubusercontent.com/wagnerdeandradesoares/monitoramento-bkp/master/dist/config.json
-BASE_DIR = r"C:/--Program Files (x86)/MonitoramentoBKP" 
+BASE_DIR = r"C:\Program Files (x86)\MonitoramentoBKP" 
 # dirotório de testes para produção: C:\Program Files (x86)\MonitoramentoBKP
 
 CHECK_INTERVAL = 60  # intervalo em segundos
@@ -148,11 +148,15 @@ def start_process_by_path(path):
 
 def dentro_da_janela(horarios, tolerancia_min=5):
     agora = datetime.now()
-    if horarios is None:
-        return (False, None)
-    if isinstance(horarios, str):
-        horarios = [horarios]
 
+    # Garantir que 'horarios' seja uma lista ou string
+    if isinstance(horarios, str):
+        horarios = [horarios]  # Se for uma string, converte para lista com 1 item
+    elif not isinstance(horarios, list):
+        log(f"⚠️ 'horarios' deve ser uma lista ou string, mas recebeu {type(horarios)}.")
+        return (False, None)
+
+    # Verificação do horário
     for horario_str in horarios:
         if not horario_str:
             continue
@@ -170,6 +174,9 @@ def dentro_da_janela(horarios, tolerancia_min=5):
             log(f"⚠️ Horário inválido em config: {horario_str} ({e})")
 
     return (False, None)
+
+
+
 
 def executar_process(path):
     try:
@@ -260,16 +267,17 @@ if __name__ == "__main__":
             intervalo = exe_info.get("intervalo", 0)
             caminho_exe = resolve_executable_path(exe_info)
 
-            # Horário fixo
+        # Verificando se 'horario' é fornecido (uma string ou lista de strings)
             if horario:
-                dentro, horario_str = dentro_da_janela(horario)
+                # Agora o 'horario' deve ser uma string ou uma lista
+                dentro, horario_str = dentro_da_janela(horario)  # Passando o 'horario' diretamente
                 if dentro and horario_str:
-                    chave_hor = f"{nome}__hor__{horario_str}__{agora.strftime('%Y-%m-%d')}"
+                    chave_hor = f"valida_{agora.strftime('%Y-%m-%d')}__{horario_str}"
                     if not last_run.get(chave_hor):
                         start_process_by_path(caminho_exe)
                         last_run[chave_hor] = True
 
-            # Intervalo
+            # Verificando se 'intervalo' é fornecido e maior que 0
             elif intervalo and intervalo > 0:
                 chave_int = f"{nome}__interval"
                 ultima = last_run.get(chave_int)
