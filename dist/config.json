@@ -12,7 +12,7 @@
   "executar": [
     {
       "nome": "abrir_teste.bat",
-      "ativo": false,
+      "ativo": true,
       "horario": 0,
       "intervalo": 2,
       "local": "C:/--Program Files (x86)/MonitoramentoBKP",
