@@ -17,7 +17,7 @@ VERSAO_FILE_PATH = os.path.join(BASE_DIR, "versao.txt")
 
 # URL do Google Apps Script
 SHEET_URL = "https://script.google.com/macros/s/AKfycbwnhW-pfrI0p6KS2G5G1cOPz63k6yjcgdYCKcZ1NQja-N1DwvneyHlLXUx-ADoBh4PYFg/exec" 
-# URL de testes para prdução: https://script.google.com/macros/s/AKfycbwnhW-pfrI0p6KS2G5G1cOPz63k6yjcgdYCKcZ1NQja-N1DwvneyHlLXUx-ADoBh4PYFg/exec
+
 
 # -----------------------------
 # Funções de log
