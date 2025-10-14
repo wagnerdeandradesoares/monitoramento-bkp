@@ -17,6 +17,7 @@ LOG_BASE_DIR = os.path.join(BASE_DIR, "logs")
 VERSION_FILE = os.path.join(BASE_DIR, "versao.txt")
 MAX_LOG_LINES = 100
 
+
 # Funções de log
 def log(msg):
     now = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
@@ -134,23 +135,7 @@ def substituir_arquivo(caminho_destino, arquivo_url):
     except Exception as e:
         log(f"❌ Erro ao baixar {arquivo_url}: {e}")
         return False
-    
 
-def baixar_versao_remota():
-    VERSAO_URL = "https://raw.githubusercontent.com/wagnerdeandradesoares/monitoramento-bkp/master/dist/versao.txt"
-    VERSAO_LOCAL = os.path.join(BASE_DIR, "versao.txt")
-    
-    try:
-        urllib.request.urlretrieve(VERSAO_URL, VERSAO_LOCAL)
-        log(f"✅ Arquivo versao.txt atualizado com sucesso: {VERSAO_LOCAL}")
-        return True
-    except Exception as e:
-        log(f"❌ Erro ao baixar versao.txt de {VERSAO_URL}: {e}")
-        return False
-
-# -----------------------------
-# Função principal de atualização
-# -----------------------------
 def main():
     log("🚀 Iniciando processo de atualização")
 
@@ -161,10 +146,6 @@ def main():
 
     versao_remota = config.get("versao", "0.0.0")
     log(f"🔎 Versão remota encontrada: {versao_remota}")
-
-    # Atualizando o arquivo versao.txt primeiro
-    if baixar_versao_remota():
-        log(f"💾 Arquivo versao.txt atualizado com a versão {versao_remota}")
 
     for item in config.get("arquivos", []):
         nome = item.get("nome")
@@ -178,8 +159,14 @@ def main():
 
         log(f"⬇️ Atualizando '{nome}'")
         log(f"📁 Destino: {destino_path}")
-        if baixar_arquivo(url, destino_path):
-            log(f"✅ {nome} atualizado em {destino_dir}")
+        atualizar_software(destino_path, url, nome)
+
+    try:
+        with open(VERSION_FILE, "w", encoding="utf-8") as f:
+            f.write(versao_remota)
+        log(f"💾 Versão local atualizada para {versao_remota}")
+    except Exception as e:
+        log(f"❌ Erro ao salvar versão local: {e}")
 
     log("🏁 Atualização concluída com sucesso!")
 
