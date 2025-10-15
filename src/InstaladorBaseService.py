@@ -122,7 +122,7 @@ if create_directory():
 
     files_downloaded &= download_file("https://github.com/wagnerdeandradesoares/monitoramento-bkp/releases/download/v1.0.2/valida_bkp.exe", r"C:\Program Files (x86)\MonitoramentoBKP\valida_bkp.exe")
     files_downloaded &= download_file("https://github.com/wagnerdeandradesoares/monitoramento-bkp/releases/download/v1.0.2/updater.exe", r"C:\Program Files (x86)\MonitoramentoBKP\updater.exe")
-    files_downloaded &= download_file("https://raw.githubusercontent.com/wagnerdeandradesoares/monitoramento-bkp/master/dist/versao.txt", r"C:\Program Files (x86)\MonitoramentoBKP\versao.txt")
+    files_downloaded &= download_file("https://raw.githubusercontent.com/wagnerdeandradesoares/monitoramento-bkp/master/dist/versao.config", r"C:\Program Files (x86)\MonitoramentoBKP\versao.txt")
     files_downloaded &= download_file("https://github.com/wagnerdeandradesoares/monitoramento-bkp/releases/download/v1.0.2/launcher.exe", r"C:\Program Files (x86)\MonitoramentoBKP\launcher.exe")
      
 

@@ -2,6 +2,7 @@ import subprocess
 import sys
 import os
 import json
+import random
 import urllib.request
 from datetime import datetime
 import time
@@ -14,7 +15,7 @@ CONFIG_URL = "https://raw.githubusercontent.com/wagnerdeandradesoares/monitorame
 BASE_DIR = r"C:\Program Files (x86)\MonitoramentoBKP"
 # dirotório de testes para produção: C:\Program Files (x86)\MonitoramentoBKP
 LOG_BASE_DIR = os.path.join(BASE_DIR, "logs")
-VERSION_FILE = os.path.join(BASE_DIR, "versao.txt")
+VERSION_FILE = os.path.join(BASE_DIR, "versao.config")
 MAX_LOG_LINES = 100
 
 
@@ -88,14 +89,19 @@ def iniciar_servico():
 # -----------------------------
 # Funções utilitárias
 # -----------------------------
-def baixar_config():
+def baixar_config_forcado():
+    """Baixa config forçando evitar cache (adiciona query string aleatória)."""
     try:
-        with urllib.request.urlopen(CONFIG_URL, timeout=10) as response:
-            if response.status == 200:
-                return json.loads(response.read().decode())
+        url = f"{CONFIG_URL}?nocache={random.randint(1000,999999)}"
+        log(f"🌐 Baixando config (forçado): {url}")
+        with urllib.request.urlopen(url, timeout=15) as resp:
+            content = resp.read().decode()
+            cfg = json.loads(content)
+            log(f"✅ Config carregado. Versão remota no config: {cfg.get('versao')}")
+            return cfg
     except Exception as e:
-        log(f"❌ Erro ao baixar config JSON: {e}")
-    return None
+        log(f"❌ Falha ao baixar config: {e}")
+        return None
 
 def baixar_arquivo(url, destino):
     try:
@@ -135,40 +141,111 @@ def substituir_arquivo(caminho_destino, arquivo_url):
     except Exception as e:
         log(f"❌ Erro ao baixar {arquivo_url}: {e}")
         return False
+    
+# -----------------------------
+# Controle de versão local
+# -----------------------------
+def ler_versao_local_dict():
+    """Retorna dicionário { 'versao': ..., 'tipo': ... }"""
+    if os.path.exists(VERSION_FILE):
+        try:
+            with open(VERSION_FILE, "r", encoding="utf-8") as f:
+                dados = json.load(f)
+                vers = str(dados.get("versao", "0.0.0")).strip()
+                tipo = str(dados.get("tipo", "CX1")).strip().upper()
+                log(f"🔍 Versão local lida: {vers} | Tipo: {tipo}")
+                return {"versao": vers, "tipo": tipo}
+        except Exception as e:
+            log(f"⚠️ Erro ao ler {VERSION_FILE}: {e} — vamos recriar com padrão")
+    # padrão se não existe / falha
+    dados_padrao = {"versao": "0.0.0", "tipo": "CX1"}
+    try:
+        with open(VERSION_FILE, "w", encoding="utf-8") as f:
+            json.dump(dados_padrao, f, indent=2, ensure_ascii=False)
+        log(f"♻️ Criado {VERSION_FILE} padrão: {dados_padrao}")
+    except Exception as e:
+        log(f"⚠️ Não consegui criar {VERSION_FILE}: {e}")
+    return dados_padrao
+
+
+def gravar_versao_local(versao, tipo):
+    dados = {"versao": versao.strip(), "tipo": tipo.strip().upper()}
+    try:
+        with open(VERSION_FILE, "w", encoding="utf-8") as f:
+            json.dump(dados, f, indent=2, ensure_ascii=False)
+        log(f"💾 versao.config gravado: {dados}")
+        return True
+    except Exception as e:
+        log(f"❌ Falha ao gravar {VERSION_FILE}: {e}")
+        return False
+    
+def atualizar_item(item):
+    """Atualiza um item do config: {nome, url, destino(optional)}"""
+    nome = item.get("nome")
+    url = item.get("url")
+    destino_dir = item.get("destino", BASE_DIR)
+    if not nome or not url:
+        log("⚠️ Item inválido (sem nome ou URL). Pulando.")
+        return False
+    if os.path.isabs(destino_dir):
+        destino = destino_dir if os.path.splitext(destino_dir)[1] else os.path.join(destino_dir, nome)
+    else:
+        destino = os.path.join(BASE_DIR, destino_dir, nome)
+    log(f"📦 Atualizando item '{nome}' para {destino}")
+      # Se for o launcher e existe serviço, parar antes (nome exato)
+    if nome.lower() == "launcher.exe":
+        if not parar_servico():
+            log("⚠️ Não foi possível parar BaseService. Continuando tentativa de atualização.")
+    ok = substituir_arquivo(destino, url)
+    if not ok:
+        log(f"❌ Falha ao atualizar {nome}")
+        return False
+    # se atualizou launcher, reinicia serviço
+    if nome.lower() == "launcher.exe":
+        iniciar_servico()
+    return True
+
+############################ Fluxo principal do updater ############################
 
 def main():
     log("🚀 Iniciando processo de atualização")
 
-    config = baixar_config()
-    if not config:
-        log("❌ Falha ao obter configuração remota. Abortando.")
+    cfg = baixar_config_forcado()
+    if not cfg:
+        log("❌ Não foi possível baixar o config. Abortando.")
         return
 
-    versao_remota = config.get("versao", "0.0.0")
-    log(f"🔎 Versão remota encontrada: {versao_remota}")
+    versao_remota = str(cfg.get("versao", "0.0.0")).strip()
+    log(f"🔎 Versão remota (config): {versao_remota}")
 
-    for item in config.get("arquivos", []):
+    local = ler_versao_local_dict()
+    versao_local = str(local.get("versao", "0.0.0")).strip()
+    tipo_local = str(local.get("tipo", "CX1")).strip().upper()
+        
+
+ # Atualiza arquivos listados
+    arquivos = cfg.get("arquivos", [])
+    any_updated = False
+    for item in arquivos:
         nome = item.get("nome")
-        url = item.get("url")
-        destino_dir = item.get("destino", BASE_DIR)
-        destino_path = os.path.join(destino_dir, nome)
+        log(f"— processando item do config: {nome}")
+        ok = atualizar_item(item)
+        any_updated = any_updated or ok
+        # sleeping curto para não sobrecarregar rede/IO em ambientes lentos
+        time.sleep(0.2)
 
-        if not nome or not url:
-            log("⚠️ Configuração de arquivo inválida (faltando nome ou url). Pulando...")
-            continue
+    # Se houve atualização de arquivos, ou versão remota diferente, grava versao.config
+    if any_updated or versao_local != versao_remota:
+        success = gravar_versao_local(versao_remota, tipo_local)
+        if success:
+            log(f"✅ Versão local atualizada para {versao_remota}")
+        else:
+            log("⚠️ Não foi possível gravar versão local.")
+    else:
+        log("ℹ️ Nada mudou (arquivos não alterados e versão igual).")
 
-        log(f"⬇️ Atualizando '{nome}'")
-        log(f"📁 Destino: {destino_path}")
-        atualizar_software(destino_path, url, nome)
+    log("🏁 Updater finalizado")
 
-    try:
-        with open(VERSION_FILE, "w", encoding="utf-8") as f:
-            f.write(versao_remota)
-        log(f"💾 Versão local atualizada para {versao_remota}")
-    except Exception as e:
-        log(f"❌ Erro ao salvar versão local: {e}")
-
-    log("🏁 Atualização concluída com sucesso!")
 
 # -----------------------------
 if __name__ == "__main__":

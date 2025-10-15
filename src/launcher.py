@@ -15,7 +15,7 @@ BASE_DIR = r"C:\Program Files (x86)\MonitoramentoBKP"
 # dirotório de testes para produção: C:\Program Files (x86)\MonitoramentoBKP
 
 CHECK_INTERVAL = 60  # intervalo em segundos
-VERSION_FILE = os.path.join(BASE_DIR, "versao.txt")
+VERSION_FILE = os.path.join(BASE_DIR, "versao.config")
 LOG_BASE_DIR = os.path.join(BASE_DIR, "logs")
 MAX_LOG_LINES = 100  # mantém apenas as últimas 100 linhas do log
 
@@ -77,23 +77,27 @@ def baixar_config():
     return None
 
 def ler_versao_local():
-    """
-    Lê a versão e o tipo de terminal (SERVIDOR, CX1, CX2 etc.)
-    Exemplo de versao.txt:
-    1.0.4|SERVIDOR
-    1.0.4|CX1
-    1.0.4|CX2
-    """
+    """Lê a versão e o tipo do arquivo versao.config (JSON)."""
     try:
-        with open(VERSION_FILE, "r", encoding="utf-8") as f:
-            conteudo = f.read().strip()
-            partes = conteudo.split("|")
-            versao = partes[0].strip()
-            tipo = partes[1].strip().upper() if len(partes) > 1 else "CX1"
-            return versao, tipo
+        versao_file = os.path.join(BASE_DIR, "versao.config")
+
+        if not os.path.exists(versao_file):
+            log("⚠️ versao.config não encontrado. Criando arquivo padrão.")
+            with open(versao_file, "w", encoding="utf-8") as f:
+                json.dump({"versao": "0.0.0", "tipo": "CX1"}, f, indent=4)
+            return "0.0.0", "CX1"
+
+        with open(versao_file, "r", encoding="utf-8") as f:
+            data = json.load(f)
+
+        versao = data.get("versao", "0.0.0").strip()
+        tipo = data.get("tipo", "CX1").strip().upper()
+        return versao, tipo
+
     except Exception as e:
-        log(f"⚠️ Erro ao ler versao.txt: {e}")
+        log(f"❌ Erro ao ler versao.config: {e}")
         return "0.0.0", "CX1"
+
 
 def comparar_versoes(v1, v2):
     try:
