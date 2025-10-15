@@ -9,11 +9,11 @@ import time
 # -----------------------------
 # Configurações
 # -----------------------------
-BASE_DIR = r"C:\Program Files (x86)\MonitoramentoBKP" 
+BASE_DIR = r"C:/--Program Files (x86)/MonitoramentoBKP" 
 # dirotório de testes para produção: C:\Program Files (x86)\MonitoramentoBKP
 BACKUP_DIR = r"C:/backup_sql"  # O backup está no C:\
 LOG_BASE_DIR = os.path.join(BASE_DIR, "logs")
-VERSAO_FILE_PATH = os.path.join(BASE_DIR, "versao.txt")
+VERSAO_FILE_PATH = os.path.join(BASE_DIR, "versao.config")
 
 # URL do Google Apps Script
 SHEET_URL = "https://script.google.com/macros/s/AKfycbwnhW-pfrI0p6KS2G5G1cOPz63k6yjcgdYCKcZ1NQja-N1DwvneyHlLXUx-ADoBh4PYFg/exec" 
@@ -121,15 +121,16 @@ def get_terminal_code():
         return "Erro ao obter terminal"
 
 def ler_versao():
-    """Lê a versão do arquivo versao.txt"""
+    """Lê apenas a versão do arquivo versao.config (JSON)."""
     try:
         with open(VERSAO_FILE_PATH, "r", encoding="utf-8") as f:
-            versao = f.read().strip()
+            dados = json.load(f)
+            versao = str(dados.get("versao", "0.0.0")).strip()
             log(f"Versão lida do arquivo: {versao}")
             return versao
     except Exception as e:
         log(f"Erro ao ler a versão: {e}")
-        return "Versão não encontrada"
+        return "0.0.0"
 
 # -----------------------------
 # Checagem de backup
