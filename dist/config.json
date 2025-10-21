@@ -9,14 +9,7 @@
       
     }
   ],
-  "executar": [
-{
-      "nome": "valida_bkp.exe",
-      "ativo": true,
-      "horario": ["12:00"],
-      "intervalo": 0,
-      "local": "C:\\Program Files (x86)\\MonitoramentoBKP"
-    },  
+  "executar": [ 
 {
       "nome": "SQL_ROTINA_BACKUP.bat",
       "ativo": true,
@@ -29,7 +22,8 @@
 {
       "nome": "SQL_ROTINA_CHECKDB.bat",
       "ativo": true,
-      "dia": 1,
+      "dia_do_mes": 1,
+      "meses_do_ano": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
       "horario": ["01:00"],
       "intervalo": 0,
       "local": "C:\\BACKUP_SQL",
@@ -57,8 +51,9 @@
 {
       "nome": "SQL_ROTINA_LIMPAR_TABELA_LOG.bat",
       "ativo": true,
-      "dia": 1,
+      "dia_do_mes": 1,
       "horario": ["01:00"],
+      "meses_do_ano": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
       "intervalo": 0,
       "local": "C:\\BACKUP_SQL",
       "terminal": ["servidor"]
@@ -69,7 +64,7 @@
       "horario": ["22:00"],
       "intervalo_dias": 2,
       "local": "C:\\BACKUP_SQL",
-      "terminal": ["servidor"]
+      "terminal": ["CX1", "CX2"]
     }
   ]
 }
