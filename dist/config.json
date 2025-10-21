@@ -10,14 +10,13 @@
     }
   ],
   "executar": [
-    {
-      "nome": "abrir_teste.bat",
-      "ativo": false,
-      "horario": 0,
+{
+      "nome": "SQL_ROTINA_BACKUP.bat",
+      "ativo": true,
+      "horario": ["10:00", "22:00"],
       "intervalo": 0,
-      "local": "C:\\--Program Files (x86)\\MonitoramentoBKP",
+      "local": "C:\\BACKUP_SQL",
       "terminal": ["servidor"]
-      
     },
     {
     "nome": "sincroniza_caixa.bat",
