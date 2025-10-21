@@ -13,7 +13,7 @@
 {
       "nome": "SQL_ROTINA_BACKUP.bat",
       "ativo": true,
-      "horario": ["10:00", "22:00"],
+      "horario": ["14:50"],
       "intervalo": 0,
       "local": "C:\\BACKUP_SQL",
       "terminal": ["servidor"]
