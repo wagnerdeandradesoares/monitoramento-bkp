@@ -10,89 +10,78 @@ from datetime import datetime, timedelta
 # Configurações
 # -----------------------------
 CONFIG_URL = "https://raw.githubusercontent.com/wagnerdeandradesoares/monitoramento-bkp/master/dist/config.json"
-#URL de testes para produção: https://raw.githubusercontent.com/wagnerdeandradesoares/monitoramento-bkp/master/dist/config.json
-BASE_DIR = r"C:\Program Files (x86)\MonitoramentoBKP" 
-# dirotório de testes para produção: C:\Program Files (x86)\MonitoramentoBKP
-
-CHECK_INTERVAL = 60  # intervalo em segundos
-VERSION_FILE = os.path.join(BASE_DIR, "versao.txt")
+BASE_DIR = r"C:\Program Files (x86)\MonitoramentoBKP"
+CHECK_INTERVAL = 60  # segundos
+VERSION_FILE = os.path.join(BASE_DIR, "versao.config")
 LOG_BASE_DIR = os.path.join(BASE_DIR, "logs")
-MAX_LOG_LINES = 100  # mantém apenas as últimas 100 linhas do log
+MAX_LOG_LINES = 100
 
-processes = {}
 last_run = {}
-_last_wait_log = {}
 
 # -----------------------------
-# Função de log
+# Log
 # -----------------------------
 def garantir_diretorio_logs():
     if not os.path.exists(LOG_BASE_DIR):
-        try:
-            os.makedirs(LOG_BASE_DIR, exist_ok=True)
-            print(f"✅ Pasta de logs criada: {LOG_BASE_DIR}")
-        except Exception as e:
-            print(f"❌ Erro ao criar a pasta de logs: {e}")
-            raise
+        os.makedirs(LOG_BASE_DIR, exist_ok=True)
 
 def log(msg):
-    now = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-    line = f"[{now}] {msg}\n"
     garantir_diretorio_logs()
+    now = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+    linha = f"[{now}] {msg}\n"
     LOG_FILE = os.path.join(LOG_BASE_DIR, "launcher.log")
 
-    lines = []
+    linhas = []
     if os.path.exists(LOG_FILE):
         with open(LOG_FILE, "r", encoding="utf-8") as f:
-            lines = f.readlines()
+            linhas = f.readlines()
 
-    lines.append(line)
-    if len(lines) > MAX_LOG_LINES:
-        lines = lines[-MAX_LOG_LINES:]
+    linhas.append(linha)
+    if len(linhas) > MAX_LOG_LINES:
+        linhas = linhas[-MAX_LOG_LINES:]
 
     with open(LOG_FILE, "w", encoding="utf-8") as f:
-        f.writelines(lines)
-
-    print(line.strip())
+        f.writelines(linhas)
+    print(linha.strip())
 
 # -----------------------------
 # Utilitários
 # -----------------------------
 def baixar_config():
-    """Baixa o config remoto forçando atualização (evita cache do GitHub)"""
     try:
-        # Adiciona um parâmetro aleatório à URL para burlar cache da CDN do GitHub
-        url = f"{CONFIG_URL}?nocache={random.randint(1000, 999999)}"
-        log(f"🌐 Baixando config atualizado: {url}")
+        url = f"{CONFIG_URL}?nocache={random.randint(1000,999999)}"
+        log(f"🌐 Baixando config remoto: {url}")
+        with urllib.request.urlopen(url, timeout=10) as resp:
+            if resp.status == 200:
+                data = json.loads(resp.read().decode())
+                log("✅ Config.json carregado com sucesso")
 
-        with urllib.request.urlopen(url, timeout=10) as response:
-            if response.status == 200:
-                data = json.loads(response.read().decode())
-                log("✅ Config baixado e carregado com sucesso")
+                # salva localmente como cache
+                with open(os.path.join(BASE_DIR, "config_cache.json"), "w", encoding="utf-8") as f:
+                    json.dump(data, f, indent=2)
                 return data
-            else:
-                log(f"⚠️ Resposta HTTP inesperada: {response.status}")
     except Exception as e:
-        log(f"❌ Erro ao baixar config JSON: {e}")
+        log(f"⚠️ Falha ao baixar config: {e}")
+
+        # tenta ler cache local
+        cache_path = os.path.join(BASE_DIR, "config_cache.json")
+        if os.path.exists(cache_path):
+            log("📦 Usando config_cache.json local (fallback).")
+            with open(cache_path, "r", encoding="utf-8") as f:
+                return json.load(f)
     return None
 
 def ler_versao_local():
-    """
-    Lê a versão e o tipo de terminal (SERVIDOR, CX1, CX2 etc.)
-    Exemplo de versao.txt:
-    1.0.4|SERVIDOR
-    1.0.4|CX1
-    1.0.4|CX2
-    """
     try:
+        if not os.path.exists(VERSION_FILE):
+            with open(VERSION_FILE, "w", encoding="utf-8") as f:
+                json.dump({"versao": "0.0.0", "tipo": "CX1"}, f)
+            return "0.0.0", "CX1"
         with open(VERSION_FILE, "r", encoding="utf-8") as f:
-            conteudo = f.read().strip()
-            partes = conteudo.split("|")
-            versao = partes[0].strip()
-            tipo = partes[1].strip().upper() if len(partes) > 1 else "CX1"
-            return versao, tipo
+            data = json.load(f)
+            return data.get("versao", "0.0.0"), data.get("tipo", "CX1").upper()
     except Exception as e:
-        log(f"⚠️ Erro ao ler versao.txt: {e}")
+        log(f"⚠️ Erro ao ler versao.config: {e}")
         return "0.0.0", "CX1"
 
 def comparar_versoes(v1, v2):
@@ -101,92 +90,11 @@ def comparar_versoes(v1, v2):
     except:
         return False
 
-def baixar_arquivo(url, destino):
-    try:
-        os.makedirs(os.path.dirname(destino), exist_ok=True)
-        urllib.request.urlretrieve(url, destino)
-        log(f"⬇️ Arquivo baixado: {destino}")
-        return True
-    except Exception as e:
-        log(f"❌ Erro ao baixar {url}: {e}")
-        return False
-
-# -----------------------------
-# Execuções fixas
-# -----------------------------
-def rodar_valida():
-    valida_path = os.path.join(BASE_DIR, "valida_bkp.exe")
-    if os.path.exists(valida_path):
-        log("▶️ Rodando valida_bkp.exe")
-        proc = executar_process(valida_path)
-        if proc:
-            proc.wait()
-            log("✅ valida_bkp concluído")
-    else:
-        log("⚠️ valida_bkp.exe não encontrado")
-
-def rodar_updater():
-    log(f"🔄 Nova versão detectada: {versao_remota} (local: {versao_local})")
-    updater_path = os.path.join(BASE_DIR, "updater.exe")
-    if os.path.exists(updater_path):
-        log("▶️ Rodando updater.exe")
-        proc = executar_process(updater_path)
-        if proc:
-            proc.wait()
-            log("✅ updater.exe concluído")
-            rodar_valida()
-    else:
-        log("⚠️ updater.exe não encontrado")
-
-def start_process_by_path(path):
-    if os.path.exists(path):
-        log(f"▶️ Iniciando: {path}")
-        return executar_process(path)
-    else:
-        log(f"⚠️ Arquivo não encontrado: {path}")
-        return None
-
-def dentro_da_janela(horarios, tolerancia_min=5):
-    agora = datetime.now()
-
-    # Garantir que 'horarios' seja uma lista ou string
-    if isinstance(horarios, str):
-        horarios = [horarios]  # Se for uma string, converte para lista com 1 item
-    elif not isinstance(horarios, list):
-        log(f"⚠️ 'horarios' deve ser uma lista ou string, mas recebeu {type(horarios)}.")
-        return (False, None)
-
-    # Verificação do horário
-    for horario_str in horarios:
-        if not horario_str:
-            continue
-        try:
-            alvo = datetime.strptime(horario_str, "%H:%M").replace(
-                year=agora.year, month=agora.month, day=agora.day
-            )
-            fim = alvo + timedelta(minutes=tolerancia_min)
-            if alvo <= agora <= fim:
-                log(f"✅ Dentro da janela de {horario_str}")
-                return (True, horario_str)
-            else:
-                log(f"🕒 Fora da janela: {horario_str} (agora {agora.strftime('%H:%M')})")
-        except Exception as e:
-            log(f"⚠️ Horário inválido em config: {horario_str} ({e})")
-
-    return (False, None)
-
-
-
-
 def executar_process(path):
     try:
         if not os.path.exists(path):
             log(f"⚠️ Arquivo não encontrado: {path}")
             return None
-
-        nome = os.path.basename(path)
-        log(f"🚀 Executando {nome} via subprocess.Popen()...")
-
         si = subprocess.STARTUPINFO()
         si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
         proc = subprocess.Popen(
@@ -195,42 +103,131 @@ def executar_process(path):
             startupinfo=si,
             shell=True
         )
-
+        log(f"▶️ Iniciando execução: {path}")
         return proc
     except Exception as e:
         log(f"❌ Erro ao executar {path}: {e}")
         return None
 
-def resolve_executable_path(exe_info):
-    nome = exe_info.get("nome")
-    local = exe_info.get("local")
-
-    if not nome:
-        log("⚠️ Nenhum nome de arquivo especificado no config.")
-        return None
-
-    if local:
-        if os.path.isabs(local):
-            caminho = os.path.join(local, nome) if os.path.isdir(local) else local
-            log(f"🔍 Caminho absoluto resolvido: {caminho}")
-            return caminho
-        else:
-            caminho = os.path.join(BASE_DIR, local, nome)
-            log(f"🔍 Caminho relativo resolvido: {caminho}")
-            return caminho
-
-    caminho = os.path.join(BASE_DIR, nome)
-    log(f"🔍 Caminho padrão resolvido: {caminho}")
-    return caminho
+def resolve_executable_path(info):
+    nome = info.get("nome")
+    local = info.get("local", BASE_DIR)
+    if os.path.isdir(local):
+        return os.path.join(local, nome)
+    return local
 
 # -----------------------------
-# Loop principal
+# Execuções fixas
+# -----------------------------
+def rodar_valida():
+    try:
+        valida_path = os.path.join(BASE_DIR, "valida_bkp.exe")
+        if os.path.exists(valida_path):
+            log("▶️ Executando valida_bkp.exe após atualização...")
+            proc = executar_process(valida_path)
+            if proc:
+                proc.wait()
+                log("✅ valida_bkp concluído com sucesso")
+        else:
+            log("⚠️ valida_bkp.exe não encontrado")
+    except Exception as e:
+        log(f"❌ Erro ao executar valida_bkp.exe: {e}")
+
+def rodar_updater(versao_remota, versao_local):
+    try:
+        log(f"🔄 Nova versão detectada ({versao_local} → {versao_remota})")
+        updater_path = os.path.join(BASE_DIR, "updater.exe")
+        if os.path.exists(updater_path):
+            log("▶️ Executando updater.exe")
+            proc = executar_process(updater_path)
+            if proc:
+                proc.wait()
+                log("✅ updater.exe concluído — iniciando valida_bkp.exe")
+                rodar_valida()
+        else:
+            log("⚠️ updater.exe não encontrado")
+    except Exception as e:
+        log(f"❌ Erro ao rodar updater: {e}")
+
+# -----------------------------
+# Regras de execução
+# -----------------------------
+def dentro_da_janela(horarios, tolerancia_min=5):
+    agora = datetime.now()
+    if isinstance(horarios, str):
+        horarios = [horarios]
+    for h in horarios:
+        try:
+            alvo = datetime.strptime(h, "%H:%M").replace(year=agora.year, month=agora.month, day=agora.day)
+            fim = alvo + timedelta(minutes=tolerancia_min)
+            if alvo <= agora <= fim:
+                return True, h
+        except:
+            continue
+    return False, None
+
+def deve_executar(exe_info):
+    agora = datetime.now()
+    nome = exe_info.get("nome")
+
+    meses = exe_info.get("mes")
+    if meses and agora.month not in meses:
+        return False
+
+    dias = exe_info.get("dia")
+    if dias and agora.day not in dias:
+        return False
+
+    horario = exe_info.get("horario")
+    if horario:
+        dentro, h = dentro_da_janela(horario)
+        if not dentro:
+            return False
+
+        intervalo_dias = exe_info.get("intervalo_dias", 0)
+        if intervalo_dias > 0:
+            chave = f"{nome}__ultimo_dia"
+            ultima_execucao = last_run.get(chave)
+            if not ultima_execucao or (agora - ultima_execucao).days >= intervalo_dias:
+                last_run[chave] = agora
+                log(f"🗓️ Agendamento detectado: '{nome}' → {h} a cada {intervalo_dias} dias")
+                return True
+            else:
+                return False
+
+        chave = f"{nome}__{agora.strftime('%Y-%m-%d_%H:%M')}"
+        if not last_run.get(chave):
+            last_run[chave] = agora
+            log(f"⏰ Agendamento detectado: '{nome}' → horário {h}")
+            return True
+        return False
+
+    intervalo = exe_info.get("intervalo", 0)
+    if intervalo > 0:
+        chave = f"{nome}__interval"
+        agora_ts = time.time()
+        ultima = last_run.get(chave, 0)
+        if agora_ts - ultima >= intervalo * 60:
+            last_run[chave] = agora_ts
+            log(f"🔁 Agendamento detectado: '{nome}' → a cada {intervalo} minutos")
+            return True
+
+    if dias and not horario:
+        log(f"📅 Agendamento detectado: '{nome}' → dia(s) {dias}")
+        return True
+
+    return False
+
+# -----------------------------
+# Principal
 # -----------------------------
 if __name__ == "__main__":
     log("🚀 Launcher iniciado")
+
     while True:
         config = baixar_config()
         if not config:
+            log("⚠️ Falha ao carregar config. Tentando novamente...")
             time.sleep(CHECK_INTERVAL)
             continue
 
@@ -239,51 +236,51 @@ if __name__ == "__main__":
         log(f"💻 Tipo deste terminal: {tipo_terminal}")
 
         if comparar_versoes(versao_local, versao_remota):
-            rodar_updater()
+            rodar_updater(versao_remota, versao_local)
         else:
-            log(f"✔️ Sistema já está na versão atual ({versao_local})")
+            log(f"✔️ Sistema atualizado — versão atual {versao_local}")
 
-        agora = datetime.now()
-
-        ok, horario_encontrado = dentro_da_janela("12:00")
-        if ok:
-            chave_valida = f"valida_{agora.strftime('%Y-%m-%d')}"
-            if not last_run.get(chave_valida):
-                rodar_valida()
-                last_run[chave_valida] = True
-
-        # --- Execuções personalizadas via config ---
+        # Execução conforme configuração
         for exe_info in config.get("executar", []):
-            nome = exe_info.get("nome")
-            if not nome or not exe_info.get("ativo", True):
-                continue
+            try:
+                nome = exe_info.get("nome", "desconhecido")
+                if not exe_info.get("ativo", True):
+                    continue
 
-            tipos_permitidos = [t.upper() for t in exe_info.get("terminal", [])]
-            if tipos_permitidos and tipo_terminal not in tipos_permitidos:
-                log(f"💡 Execução '{nome}' ignorada — permitida apenas para {tipos_permitidos}.")
-                continue
+                tipos = [t.upper() for t in exe_info.get("terminal", [])]
+                if tipos:
+                    if tipo_terminal not in tipos:
+                        log(f"💡 Execução '{nome}' ignorada — restrita a {tipos}.")
+                        continue
+                else:
+                    log(f"⚙️ Execução '{nome}' configurada para todos os terminais.")
 
-            horario = exe_info.get("horario")
-            intervalo = exe_info.get("intervalo", 0)
-            caminho_exe = resolve_executable_path(exe_info)
+                horario = exe_info.get("horario")
+                intervalo_dias = exe_info.get("intervalo_dias", 0)
+                dias = exe_info.get("dia")
+                meses = exe_info.get("mes")
 
-        # Verificando se 'horario' é fornecido (uma string ou lista de strings)
-            if horario:
-                # Agora o 'horario' deve ser uma string ou uma lista
-                dentro, horario_str = dentro_da_janela(horario)  # Passando o 'horario' diretamente
-                if dentro and horario_str:
-                    chave_hor = f"valida_{agora.strftime('%Y-%m-%d')}__{horario_str}"
-                    if not last_run.get(chave_hor):
-                        start_process_by_path(caminho_exe)
-                        last_run[chave_hor] = True
+                if dias and meses:
+                    log(f"📅 Agendamento '{nome}' configurado para rodar no(s) dia(s) {dias} do(s) mês(es) {meses}.")
+                elif dias:
+                    log(f"📅 Agendamento '{nome}' configurado para rodar no(s) dia(s): {dias}.")
+                elif meses:
+                    log(f"📅 Agendamento '{nome}' configurado para rodar no(s) mês(es): {meses}.")
+                elif intervalo_dias > 0 and horario:
+                    log(f"🔄 Agendamento '{nome}' configurado para rodar às {horario} a cada {intervalo_dias} dia(s).")
+                elif horario:
+                    log(f"⏰ Agendamento '{nome}' configurado para rodar nos horários: {horario}")
+                else:
+                    log(f"⚠️ Nenhum horário definido para '{nome}'.")
 
-            # Verificando se 'intervalo' é fornecido e maior que 0
-            elif intervalo and intervalo > 0:
-                chave_int = f"{nome}__interval"
-                ultima = last_run.get(chave_int)
-                now_ts = time.time()
-                if not ultima or (now_ts - ultima) >= (intervalo * 60):
-                    start_process_by_path(caminho_exe)
-                    last_run[chave_int] = now_ts
+                if deve_executar(exe_info):
+                    caminho = resolve_executable_path(exe_info)
+                    proc = executar_process(caminho)
+                    if proc:
+                        proc.wait()
+                        log(f"✅ Execução concluída com sucesso: {nome}")
+
+            except Exception as e:
+                log(f"❌ Erro ao processar agendamento '{exe_info.get('nome', 'desconhecido')}': {e}")
 
         time.sleep(CHECK_INTERVAL)
