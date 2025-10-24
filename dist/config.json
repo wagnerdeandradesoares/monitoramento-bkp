@@ -9,22 +9,69 @@
       
     }
   ],
-  "executar": [
+  "executar": [ 
+{
+      "nome": "valida_bkp.exe",
+      "ativo": true,
+      "horario": ["12:00"],
+      "intervalo": 0,
+      "local": "C:\\Program Files (x86)\\MonitoramentoBKP"
+},
 {
       "nome": "SQL_ROTINA_BACKUP.bat",
       "ativo": true,
-      "horario": ["14:54"],
+      "horario": ["10:00", "22:00"],
       "intervalo": 0,
       "local": "C:\\BACKUP_SQL",
       "terminal": ["servidor"]
     },
-    {
-    "nome": "sincroniza_caixa.bat",
-    "ativo": false,
-    "horario": 0,
-    "intervalo": 0,
-    "local": "C:\\BACKUP_sql",
-    "terminal": ["CX1", "CX2"]
-  }
+ 
+{
+      "nome": "SQL_ROTINA_CHECKDB.bat",
+      "ativo": true,
+      "dia": [1],
+      "mes": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+      "horario": ["01:00"],
+      "intervalo": 0,
+      "local": "C:\\BACKUP_SQL",
+      "terminal": ["servidor"]
+    },
+ 
+{
+      "nome": "SQL_ROTINA_ENVIAR_BKP.bat",
+      "ativo": true,
+      "horario": ["11:00", "23:00"],
+      "intervalo": 0,
+      "local": "C:\\BACKUP_SQL",
+      "terminal": ["servidor"]
+    },
+ 
+{
+      "nome": "SQL_ROTINA_INDICES.bat",
+      "ativo": true,
+      "horario": ["01:00"],
+      "intervalo_dias": 6,
+      "local": "C:\\BACKUP_SQL",
+      "terminal": ["servidor"]
+    },
+ 
+{
+      "nome": "SQL_ROTINA_LIMPAR_LOG.bat",
+      "ativo": true,
+      "dia": [1],
+      "horario": ["01:00"],
+      "mes": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+      "intervalo": 0,
+      "local": "C:\\BACKUP_SQL",
+      "terminal": ["servidor"]
+    },
+{
+      "nome": "SQL_ROTINA_APAGAR_BKP_ANTIGO.bat",
+      "ativo": true,
+      "horario": ["22:00"],
+      "intervalo_dias": 2,
+      "local": "C:\\BACKUP_SQL",
+      "terminal": ["CX1", "CX2"]
+    }
   ]
 }
