@@ -103,9 +103,22 @@ def executar_process(path):
         nome_exe = os.path.splitext(os.path.basename(path))[0]
         log_individual = os.path.join(LOG_BASE_DIR, f"{nome_exe}.txt")
 
-        # Acrescenta data/hora da execução no log
-        with open(log_individual, "a", encoding="utf-8") as f:
-            f.write(f"[{datetime.now().strftime('%d/%m/%Y %H:%M:%S')}] Executado: {path}\n")
+        # Lê linhas atuais
+        linhas = []
+        if os.path.exists(log_individual):
+            with open(log_individual, "r", encoding="utf-8") as f:
+                linhas = f.readlines()
+
+        # Adiciona nova execução
+        linhas.append(f"[{datetime.now().strftime('%d/%m/%Y %H:%M:%S')}] Executado: {path}\n")
+
+        # Mantém apenas as últimas MAX_LOG_LINES
+        if len(linhas) > MAX_LOG_LINES:
+            linhas = linhas[-MAX_LOG_LINES:]
+
+        # Salva novamente
+        with open(log_individual, "w", encoding="utf-8") as f:
+            f.writelines(linhas)
 
         # Executa normalmente
         si = subprocess.STARTUPINFO()
@@ -123,6 +136,7 @@ def executar_process(path):
     except Exception as e:
         log(f"❌ Erro ao executar {path}: {e}")
         return None
+
 
 
 def resolve_executable_path(info):

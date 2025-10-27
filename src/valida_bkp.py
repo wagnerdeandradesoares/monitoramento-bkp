@@ -11,9 +11,10 @@ import time
 # -----------------------------
 BASE_DIR = r"C:\Program Files (x86)\MonitoramentoBKP" 
 # dirotório de testes para produção: C:\Program Files (x86)\MonitoramentoBKP
-BACKUP_DIR = r"C:/backup_sql"  # O backup está no C:\
+BACKUP_DIR = r"C:\backup_sql"  # O backup está no C:\
 LOG_BASE_DIR = os.path.join(BASE_DIR, "logs")
 VERSAO_FILE_PATH = os.path.join(BASE_DIR, "versao.config")
+
 
 # URL do Google Apps Script
 SHEET_URL = "https://script.google.com/macros/s/AKfycbwnhW-pfrI0p6KS2G5G1cOPz63k6yjcgdYCKcZ1NQja-N1DwvneyHlLXUx-ADoBh4PYFg/exec" 
@@ -104,6 +105,25 @@ def get_loja_code():
     except Exception as e:
         log(f"❌ Erro ao acessar o registro da filial: {e}")
         return "Erro ao obter código"
+    
+def update_version_file(loja_code):
+    """Atualiza o arquivo versao.config com o código da filial."""
+    try:
+        # Verificando se o arquivo existe
+        if os.path.exists(VERSAO_FILE_PATH):
+            # Arquivo existe, então lemos seu conteúdo
+            with open(VERSAO_FILE_PATH, 'r', encoding='utf-8') as file:
+                config = json.load(file)
+            
+            # Atualizando a chave "filial" com o novo código da loja
+            config["filial"] = loja_code
+
+            # Salvando as alterações no arquivo
+            with open(VERSAO_FILE_PATH, 'w', encoding='utf-8') as file:
+                json.dump(config, file, indent=4, ensure_ascii=False)
+    except Exception as e:
+        print(f"❌ Erro ao atualizar o arquivo versao.config: {e}")
+        
 
 def get_terminal_code():
     """Recupera o código do terminal do registro do Windows"""
@@ -143,6 +163,7 @@ def check_backup():
     # Recupera códigos do registro
     filial_code = get_loja_code()
     terminal_code = get_terminal_code()
+    update_version_file(filial_code)
 
     # Recupera a versão
     versao = ler_versao()
