@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 # -----------------------------
 # Configurações
 # -----------------------------
-CONFIG_URL = "https://raw.githubusercontent.com/wagnerdeandradesoares/monitoramento-bkp/master/dist/config.json"
+CONFIG_URL = "https://github.com/wagnerdeandradesoares/monitoramento-bkp/releases/download/v1.0.2/config.json"
 BASE_DIR = r"C:\Program Files (x86)\MonitoramentoBKP"
 CHECK_INTERVAL = 60  # segundos
 VERSION_FILE = os.path.join(BASE_DIR, "versao.config")
@@ -95,6 +95,32 @@ def executar_process(path):
         if not os.path.exists(path):
             log(f"⚠️ Arquivo não encontrado: {path}")
             return None
+
+        # Garante pasta de logs
+        garantir_diretorio_logs()
+
+        # Nome fixo do log por executável
+        nome_exe = os.path.splitext(os.path.basename(path))[0]
+        log_individual = os.path.join(LOG_BASE_DIR, f"{nome_exe}.txt")
+
+        # Lê linhas atuais
+        linhas = []
+        if os.path.exists(log_individual):
+            with open(log_individual, "r", encoding="utf-8") as f:
+                linhas = f.readlines()
+
+        # Adiciona nova execução
+        linhas.append(f"[{datetime.now().strftime('%d/%m/%Y %H:%M:%S')}] Executado: {path}\n")
+
+        # Mantém apenas as últimas MAX_LOG_LINES
+        if len(linhas) > MAX_LOG_LINES:
+            linhas = linhas[-MAX_LOG_LINES:]
+
+        # Salva novamente
+        with open(log_individual, "w", encoding="utf-8") as f:
+            f.writelines(linhas)
+
+        # Executa normalmente
         si = subprocess.STARTUPINFO()
         si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
         proc = subprocess.Popen(
@@ -103,11 +129,15 @@ def executar_process(path):
             startupinfo=si,
             shell=True
         )
-        log(f"▶️ Iniciando execução: {path}")
+
+        log(f"▶️ Iniciando execução: {path} (registrado em {log_individual})")
         return proc
+
     except Exception as e:
         log(f"❌ Erro ao executar {path}: {e}")
         return None
+
+
 
 def resolve_executable_path(info):
     nome = info.get("nome")
@@ -195,12 +225,17 @@ def deve_executar(exe_info):
             else:
                 return False
 
-        chave = f"{nome}__{agora.strftime('%Y-%m-%d_%H:%M')}"
-        if not last_run.get(chave):
-            last_run[chave] = agora
-            log(f"⏰ Agendamento detectado: '{nome}' → horário {h}")
-            return True
-        return False
+        # 🔒 Evita execuções repetidas dentro da janela de horário
+        chave = f"{nome}__{agora.strftime('%Y-%m-%d')}__{h}"
+        ultima_execucao = last_run.get(chave)
+        if ultima_execucao:
+            if (agora - ultima_execucao).seconds < 600:  # 10 minutos
+                log(f"⏳ '{nome}' já executado recentemente (janela de 10 min). Ignorando.")
+                return False
+
+        last_run[chave] = agora
+        log(f"⏰ Agendamento detectado: '{nome}' → horário {h}")
+        return True
 
     intervalo = exe_info.get("intervalo", 0)
     if intervalo > 0:
@@ -217,6 +252,7 @@ def deve_executar(exe_info):
         return True
 
     return False
+
 
 # -----------------------------
 # Principal
