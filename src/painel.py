@@ -20,7 +20,7 @@ from tkinter import (
 )
 
 # ------------- Config (ajuste se necessário) -------------
-CONFIG_URL = "https://raw.githubusercontent.com/wagnerdeandradesoares/monitoramento-bkp/master/dist/config.json"
+CONFIG_URL = "https://github.com/wagnerdeandradesoares/monitoramento-bkp/releases/download/v1.0.2/config.json"
 BASE_DIR = r"C:\Program Files (x86)\MonitoramentoBKP"
 LOG_BASE_DIR = os.path.join(BASE_DIR, "logs")
 LAUNCHER_LOG = os.path.join(LOG_BASE_DIR, "launcher.log")

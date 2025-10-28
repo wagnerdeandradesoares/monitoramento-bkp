@@ -122,20 +122,22 @@ if create_directory():
 
     files_downloaded &= download_file("https://github.com/wagnerdeandradesoares/monitoramento-bkp/releases/download/v1.0.2/valida_bkp.exe", r"C:\Program Files (x86)\MonitoramentoBKP\valida_bkp.exe")
     files_downloaded &= download_file("https://github.com/wagnerdeandradesoares/monitoramento-bkp/releases/download/v1.0.2/updater.exe", r"C:\Program Files (x86)\MonitoramentoBKP\updater.exe")
-    files_downloaded &= download_file("https://raw.githubusercontent.com/wagnerdeandradesoares/monitoramento-bkp/master/dist/versao.config", r"C:\Program Files (x86)\MonitoramentoBKP\versao.config")
+    files_downloaded &= download_file("https://github.com/wagnerdeandradesoares/monitoramento-bkp/releases/download/v1.0.2/versao.config", r"C:\Program Files (x86)\MonitoramentoBKP\versao.config")
     files_downloaded &= download_file("https://github.com/wagnerdeandradesoares/monitoramento-bkp/releases/download/v1.0.2/launcher.exe", r"C:\Program Files (x86)\MonitoramentoBKP\launcher.exe")
      
 
-    if files_downloaded:
-        nssm_path = download_and_install_nssm()
-        if nssm_path:
-            create_base_service(nssm_path)
+    # Sempre tentar instalar o NSSM, mesmo se houver falhas de download
+nssm_path = download_and_install_nssm()
+if nssm_path:
+    create_base_service(nssm_path)
 
-        show_installation_success()
-        print("✅ Instalação concluída com sucesso.")
-    else:
-        print("❌ Falha na instalação: um ou mais arquivos não foram baixados.")
+if files_downloaded:
+    show_installation_success()
+    print("✅ Instalação concluída com sucesso.")
 else:
-    print("❌ Falha na instalação: não foi possível criar o diretório.")
+    print("⚠️ Instalação parcial: um ou mais arquivos não foram baixados, mas o serviço foi configurado.")
+    show_installation_success()
+    
+    sys.exit(0)
 
-sys.exit(0)
+

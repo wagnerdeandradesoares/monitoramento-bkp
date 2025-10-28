@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 # -----------------------------
 # Configurações
 # -----------------------------
-CONFIG_URL = "https://raw.githubusercontent.com/wagnerdeandradesoares/monitoramento-bkp/master/dist/config.json"
+CONFIG_URL = "https://github.com/wagnerdeandradesoares/monitoramento-bkp/releases/download/v1.0.2/config.json"
 BASE_DIR = r"C:\Program Files (x86)\MonitoramentoBKP"
 CHECK_INTERVAL = 60  # segundos
 VERSION_FILE = os.path.join(BASE_DIR, "versao.config")

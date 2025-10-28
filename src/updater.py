@@ -10,7 +10,7 @@ import time
 # -----------------------------
 # Configurações
 # -----------------------------
-CONFIG_URL = "https://raw.githubusercontent.com/wagnerdeandradesoares/monitoramento-bkp/master/dist/config.json"
+CONFIG_URL = "https://github.com/wagnerdeandradesoares/monitoramento-bkp/releases/download/v1.0.2/config.json"
 #URL de testes para produção: https://raw.githubusercontent.com/wagnerdeandradesoares/monitoramento-bkp/master/dist/config.json
 BASE_DIR = r"C:\Program Files (x86)\MonitoramentoBKP"
 # dirotório de testes para produção: C:\Program Files (x86)\MonitoramentoBKP
@@ -146,38 +146,52 @@ def substituir_arquivo(caminho_destino, arquivo_url):
 # Controle de versão local
 # -----------------------------
 def ler_versao_local_dict():
-    """Retorna dicionário { 'versao': ..., 'tipo': ... }"""
+    """Lê o versao.config completo e retorna um dicionário."""
     if os.path.exists(VERSION_FILE):
         try:
             with open(VERSION_FILE, "r", encoding="utf-8") as f:
                 dados = json.load(f)
-                vers = str(dados.get("versao", "0.0.0")).strip()
-                tipo = str(dados.get("tipo", "CX1")).strip().upper()
-                log(f"🔍 Versão local lida: {vers} | Tipo: {tipo}")
-                return {"versao": vers, "tipo": tipo}
+                versao = str(dados.get("versao", "0.0.0")).strip()
+                log(f"🔍 Versão local lida: {versao}")
+                return dados  # retorna tudo, não só a versão
         except Exception as e:
-            log(f"⚠️ Erro ao ler {VERSION_FILE}: {e} — vamos recriar com padrão")
-    # padrão se não existe / falha
+            log(f"⚠️ Erro ao ler {VERSION_FILE}: {e} — recriando padrão")
+    # cria arquivo padrão se não existir
     dados_padrao = {"versao": "0.0.0", "tipo": "CX1"}
     try:
         with open(VERSION_FILE, "w", encoding="utf-8") as f:
             json.dump(dados_padrao, f, indent=2, ensure_ascii=False)
         log(f"♻️ Criado {VERSION_FILE} padrão: {dados_padrao}")
     except Exception as e:
-        log(f"⚠️ Não consegui criar {VERSION_FILE}: {e}")
+        log(f"⚠️ Falha ao criar {VERSION_FILE}: {e}")
     return dados_padrao
 
 
-def gravar_versao_local(versao, tipo):
-    dados = {"versao": versao.strip(), "tipo": tipo.strip().upper()}
+def gravar_versao_local(versao_nova):
+    """
+    Atualiza apenas a chave 'versao' mantendo todas as outras existentes.
+    Se o arquivo não existir, cria um novo com versão padrão.
+    """
     try:
+        # Lê o conteúdo existente (ou cria base vazia)
+        if os.path.exists(VERSION_FILE):
+            with open(VERSION_FILE, "r", encoding="utf-8") as f:
+                dados = json.load(f)
+        else:
+            dados = {}
+
+        versao_antiga = dados.get("versao", "0.0.0")
+        dados["versao"] = versao_nova.strip()
+
         with open(VERSION_FILE, "w", encoding="utf-8") as f:
             json.dump(dados, f, indent=2, ensure_ascii=False)
-        log(f"💾 versao.config gravado: {dados}")
+
+        log(f"💾 Versão atualizada: {versao_antiga} → {versao_nova}")
         return True
     except Exception as e:
-        log(f"❌ Falha ao gravar {VERSION_FILE}: {e}")
+        log(f"❌ Erro ao atualizar versão no {VERSION_FILE}: {e}")
         return False
+
     
 def atualizar_item(item):
     """Atualiza um item do config: {nome, url, destino(optional)}"""
@@ -236,13 +250,14 @@ def main():
 
     # Se houve atualização de arquivos, ou versão remota diferente, grava versao.config
     if any_updated or versao_local != versao_remota:
-        success = gravar_versao_local(versao_remota, tipo_local)
+        success = gravar_versao_local(versao_remota)
         if success:
             log(f"✅ Versão local atualizada para {versao_remota}")
         else:
             log("⚠️ Não foi possível gravar versão local.")
     else:
         log("ℹ️ Nada mudou (arquivos não alterados e versão igual).")
+
 
     log("🏁 Updater finalizado")
 
