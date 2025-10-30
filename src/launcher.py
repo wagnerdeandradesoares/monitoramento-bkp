@@ -49,19 +49,20 @@ def log(msg):
 # -----------------------------
 def baixar_config():
     try:
-        url = f"{CONFIG_URL}?nocache={random.randint(1000,999999)}"
-        log(f"🌐 Baixando config remoto: {url}")
-        with urllib.request.urlopen(url, timeout=10) as resp:
-            if resp.status == 200:
-                data = json.loads(resp.read().decode())
-                log("✅ Config.json carregado com sucesso")
+            url = f"{CONFIG_URL}?nocache={random.randint(1000,999999)}"
+            log(f"🌐 Baixando config remoto: {url}")
+            with urllib.request.urlopen(url, timeout=10) as resp:
+                if resp.status == 200:
+                    data = json.loads(resp.read().decode())
+                    log("✅ Config.json carregado com sucesso")
 
-                # salva localmente como cache
-                with open(os.path.join(BASE_DIR, "config_cache.json"), "w", encoding="utf-8") as f:
-                    json.dump(data, f, indent=2)
-                return data
+                    # salva localmente como cache
+                    with open(os.path.join(BASE_DIR, "config_cache.json"), "w", encoding="utf-8") as f:
+                        json.dump(data, f, indent=2)
+                    return data
     except Exception as e:
         log(f"⚠️ Falha ao baixar config: {e}")
+        
 
         # tenta ler cache local
         cache_path = os.path.join(BASE_DIR, "config_cache.json")
@@ -69,8 +70,9 @@ def baixar_config():
             log("📦 Usando config_cache.json local (fallback).")
             with open(cache_path, "r", encoding="utf-8") as f:
                 return json.load(f)
+            
     return None
-
+        
 def ler_versao_local():
     try:
         if not os.path.exists(VERSION_FILE):
@@ -90,6 +92,7 @@ def comparar_versoes(v1, v2):
     except:
         return False
 
+
 def executar_process(path):
     try:
         if not os.path.exists(path):
@@ -103,24 +106,20 @@ def executar_process(path):
         nome_exe = os.path.splitext(os.path.basename(path))[0]
         log_individual = os.path.join(LOG_BASE_DIR, f"{nome_exe}.txt")
 
-        # Lê linhas atuais
+        # Lê linhas atuais do log
         linhas = []
         if os.path.exists(log_individual):
             with open(log_individual, "r", encoding="utf-8") as f:
                 linhas = f.readlines()
 
-        # Adiciona nova execução
+        # Adiciona nova execução ao log
         linhas.append(f"[{datetime.now().strftime('%d/%m/%Y %H:%M:%S')}] Executado: {path}\n")
 
         # Mantém apenas as últimas MAX_LOG_LINES
         if len(linhas) > MAX_LOG_LINES:
             linhas = linhas[-MAX_LOG_LINES:]
 
-        # Salva novamente
-        with open(log_individual, "w", encoding="utf-8") as f:
-            f.writelines(linhas)
-
-        # Executa normalmente
+        # Executa o processo e aguarda a finalização
         si = subprocess.STARTUPINFO()
         si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
         proc = subprocess.Popen(
@@ -131,6 +130,15 @@ def executar_process(path):
         )
 
         log(f"▶️ Iniciando execução: {path} (registrado em {log_individual})")
+        
+        # Aguarda o término da execução do processo
+        proc.wait()
+
+        # Após o processo terminar, atualiza o log
+        with open(log_individual, "w", encoding="utf-8") as f:
+            f.writelines(linhas)
+
+        log(f"✅ Execução finalizada com sucesso: {path}")
         return proc
 
     except Exception as e:
